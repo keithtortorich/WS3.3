@@ -10,12 +10,18 @@ The working directory is mounted via FUSE with restricted `unlink`/`rename`
 semantics: git `HEAD.lock`/`index.lock` files created by the Write tool
 could not be removed by shell commands (`Operation not permitted`), and
 `npm install` hit the same restriction (`ENOTEMPTY` on an atomic rename
-inside `node_modules`). Workaround used throughout the build:
+inside `node_modules`). Workaround used during the build:
 - All file **authoring** was done directly on the mounted path (Write/Edit
   tools), which is what ends up in the deliverable.
-- All **git history** was built in a mirrored clone at `/tmp/work/smm`
-  (real ext4 disk, no FUSE restrictions), kept in sync via `rsync` after
-  every milestone and committed there.
+- Intermediate **git history** during the build was staged in a mirrored
+  clone at `/tmp/work/smm` (real ext4 disk, no FUSE restrictions) to work
+  around the stuck lock files, kept in sync via `rsync` after every
+  milestone. The final commit was then landed directly on the mounted
+  repo's real `.git` using low-level plumbing (`git write-tree` /
+  `git commit-tree` / `git update-ref`), which bypasses the stuck
+  lock-file cleanup step entirely. **The mounted `social-media-marketing-
+  machine/` directory is the authoritative deliverable**, its `.git`
+  history is real and complete, and `git status` on it is clean.
 - `npm install` was likewise run in a mirrored copy at `/tmp/fe_build` for
   verification purposes (tsc/vitest/build all ran successfully there);
   `package-lock.json` was copied back onto the mounted `frontend/` so the
@@ -23,7 +29,8 @@ inside `node_modules`). Workaround used throughout the build:
   standard filesystem.
 
 This is an environment/filesystem limitation of this specific sandbox, not
-a defect in the generated code.
+a defect in the generated code. It has no effect on the final delivered
+commit, which lives on the mounted path.
 
 ## What was built (by section)
 
@@ -273,11 +280,11 @@ All depends_on references valid.
 ## Final commit
 
 ```
-537dd52448cec4fda4de19f6ae263807d1794ab9
+b29f864852d6a5b6e677289cf74eca0e4c3893e1
 ```
 
-(Git history for this build lives at `/tmp/work/smm` in this sandbox due
-to the FUSE lock-file restriction described above; the mounted
-`social-media-marketing-machine/` directory contains the identical file
-content as this commit but its own `.git` could not be updated in-place —
-see Environment note at the top of this report.)
+This commit is on the mounted `social-media-marketing-machine/` repo
+itself (verified via `git log -1 --format=%H` and a clean `git status` at
+that path) — it is the real, authoritative deliverable history, not a
+mirror. See the Environment note at the top of this report for how the
+FUSE lock-file issue was worked around to land it.

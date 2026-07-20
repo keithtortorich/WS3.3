@@ -78,7 +78,10 @@ class Settings(BaseSettings):
     GROK_API_KEY: str = ""
     HERMES_API_KEY: str = ""
 
-    # --- LinkedIn (fully implemented) ---
+    # --- Instagram (fully implemented) ---
+    INSTAGRAM_APP_ID: str = "replace_me"
+    INSTAGRAM_APP_SECRET: str = "replace_me"
+    INSTAGRAM_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/instagram/callback"
     LINKEDIN_CLIENT_ID: str = "replace_me"
     LINKEDIN_CLIENT_SECRET: str = "replace_me"
     LINKEDIN_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/linkedin/callback"

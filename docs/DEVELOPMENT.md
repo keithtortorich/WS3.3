@@ -109,6 +109,29 @@ cd frontend && npm run build       # full production build (requires real Clerk 
 
 See `docs/ARCHITECTURE.md` for the full module-boundary explanation.
 
+## Platform adapter maturity
+
+| Platform | Status |
+|----------|--------|
+| LinkedIn | Fully implemented: OAuth2, publish, schedule, delete, update, metrics, media validation |
+| Instagram | Fully implemented: OAuth2, publish, schedule, delete, update, metrics, media validation |
+| Facebook / X / Threads / TikTok / Pinterest / YouTube / Google Business | Typed stubs via `not_implemented()` — see `app/social/platforms/_stub_base.py` |
+
+## Instagram adapter notes
+
+The Instagram adapter (`app/social/platforms/instagram.py`) mirrors the LinkedIn adapter and supports:
+- OAuth token exchange + long-lived token refresh against Meta’s Graph API
+- media container creation + publish flow (`/{ig-user-id}/media`, `/{ig-user-id}/media_publish`)
+- delete, update (delete + republish fallback), metrics via `/{ig-media-id}/insights`
+- local media validation: image ≤ 8 MB, video ≤ 4 GB, JPEG/PNG images ≥ 320px, reels 3–90 seconds
+
+Required environment variables:
+- `INSTAGRAM_APP_ID`
+- `INSTAGRAM_APP_SECRET`
+- `INSTAGRAM_REDIRECT_URI`
+
+Unit tests live under `tests/unit/test_instagram_adapter.py`.
+
 ## Code style
 
 - Python: type hints everywhere, docstrings that explain *why* not *what*.

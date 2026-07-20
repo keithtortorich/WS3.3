@@ -64,8 +64,9 @@ commit, which lives on the mounted path.
    capabilities), factory keyed by `PlatformName` enum, full LinkedIn
    implementation (OAuth2, UGC Posts API, Assets/media upload registration,
    Organizational Entity Share Statistics, documented media constraints),
-   8 typed stubs (Facebook/Instagram/X/Threads/TikTok/Pinterest/YouTube/
-   Google Business).
+   full Instagram implementation (OAuth2, long-lived token exchange, Graph API
+   container+publish flow, documented media constraints), 6 typed stubs
+   (Facebook/X/Threads/TikTok/Pinterest/YouTube/Google Business).
 7. **Prompt template engine** — Jinja2-based `PromptTemplateService`, 3
    genuinely useful starter templates (`social_post_caption.jinja2`,
    `headline_hook.jinja2`, `hashtag_generator.jinja2`), seed script.
@@ -78,20 +79,57 @@ commit, which lives on the mounted path.
    event bus with 9 typed domain events, real `execute_publish_job` /
    `retry_publish_job_with_backoff` Celery tasks implementing exponential
    backoff per `PUBLISH_RETRY_MAX_ATTEMPTS`/`PUBLISH_RETRY_BACKOFF_BASE_SECONDS`.
-10. **Next.js frontend** — TypeScript strict, Tailwind, hand-authored
+10. **Scheduled publish loop** — Celery beat task `enqueue_due_schedules`
+    polls `Schedule` rows whose `scheduled_at <= now()` and converts them
+    into `PublishJob` rows, closing the loop from planned post to worker-
+    consumable job.
+11. **Next.js frontend** — TypeScript strict, Tailwind, hand-authored
     shadcn/ui components (button/card/table/badge/skeleton), TanStack
-    Query provider, Clerk provider + middleware route protection, 10
-    dashboard page shells, fully wired Campaigns page (`useCampaigns` hook
-    → `GET /api/v1/campaigns` → table with loading/error/empty states).
-11. **Docker Compose** — postgres/redis/minio/backend/celery_worker/
+    Query provider, Clerk provider + middleware route protection, fully
+    wired dashboard pages for Clients, Calendar, Approvals, Analytics, and
+    Media/AI Studio using the same `useCampaigns`/`CampaignsTable` pattern
+    established in the initial build.
+12. **Media upload pipeline** — Pre-signed S3/MinIO upload URL endpoint plus
+    media metadata persistence, letting the frontend upload assets directly
+    without routing binaries through the backend.
+13. **PlatformAccount token encryption** — Production column-level encryption
+    for OAuth `access_token` and `refresh_token` using Fernet at the SQLAlchemy
+    `TypeDecorator` boundary, with a reusable `TokenEncryption` service class.
+    Includes two Alembic migrations: one to mark legacy plaintext tokens as
+    encrypted, and one to backfill them through the new encrypted path.
+14. **Docker Compose** — postgres/redis/minio/backend/celery_worker/
     frontend, healthchecks, named volumes, multi-stage Dockerfiles for
     both services.
-12. **Tests** — pytest + pytest-asyncio backend suite (20 tests), Vitest
-    frontend suite (2 tests). See verification output below.
-13. **Documentation** — this file plus `README.md`, `docs/ARCHITECTURE.md`,
+15. **Tests** — pytest + pytest-asyncio backend suite, Vitest frontend suite.
+    See verification output below.
+16. **Documentation** — this file plus `README.md`, `docs/ARCHITECTURE.md`,
     `docs/ERD.md`, `docs/DEVELOPMENT.md`, `docs/TROUBLESHOOTING.md`.
 
 ## Verification — actual command output
+
+### PostgreSQL empirical verification
+
+Run these commands on a machine with Docker available:
+
+```bash
+docker compose up -d postgres
+docker compose exec postgres psql -U smm_admin -d smm_platform -c "SELECT 1;"
+
+cd backend
+export DATABASE_URL_SYNC="postgresql+psycopg://smm_admin:smm_dev_password@localhost:5432/smm_platform"
+export DATABASE_URL="postgresql+asyncpg://smm_admin:smm_dev_password@localhost:5432/smm_platform"
+export ALEMBIC_USE_SQLITE=0
+alembic upgrade head
+
+cd /Users/doc/Desktop/social-media-marketing-machine/social-media-marketing-machine
+python3 -m compileall backend/app
+pytest backend/tests -v
+```
+
+Verify all 22+ tables exist plus the new `alembic_version` row for
+`d3f10a7c9b11`. On this host, Docker/Postgres was unavailable, so the
+SQLite smoke-test path was used instead; use the commands above for real
+Postgres verification.
 
 ### `python3 -m compileall backend/app`
 
@@ -233,32 +271,25 @@ All depends_on references valid.
 - **AI providers**: only Ollama is a full implementation. OpenAI, Claude,
   Gemini, Grok, Hermes are typed stubs raising `NotImplementedError` with
   a message naming the exact env var and file to implement.
-- **Social platforms**: only LinkedIn is a full implementation. Facebook,
-  Instagram, X, Threads, TikTok, Pinterest, YouTube, Google Business are
-  typed stubs, same pattern.
+- **Social platforms**: LinkedIn and Instagram are full implementations.
+  Facebook, X, Threads, TikTok, Pinterest, YouTube, and Google Business
+  remain typed stubs following the same adapter pattern.
 - **Billing/payments** (Stripe or similar): page shell only, no backend.
 - **Real-time notifications delivery** (WebSocket/SSE/push): Notification
   rows are persisted and queryable via REST; no live-push transport is
   implemented.
-- **Media binary upload transport**: the Media router registers metadata
-  for assets already uploaded via a pre-signed S3/MinIO URL flow; the
-  pre-signed URL generation endpoint itself is not implemented (S3 client
-  wiring exists implicitly via boto3 in requirements.txt but no dedicated
-  router/service was built for it).
-- **Celery beat / periodic schedule polling**: `Schedule` rows are created
-  by the publish router, but no periodic beat task was implemented to scan
-  for due schedules and auto-enqueue `PublishJob`s — the immediate
-  ("publish now") path is fully wired end-to-end; the "wait until
-  scheduled time" path creates the DB row but needs a beat schedule added
-  to close the loop.
-- **Token encryption at rest**: `PlatformAccount.access_token`/
-  `refresh_token` are stored as plain strings in this scaffold; production
-  use requires column-level encryption (e.g. via a KMS), noted in the
-  model's docstring.
-- **PostgreSQL was never actually run** in this sandbox (no server
-  available) — the schema/migration were validated against SQLite only.
-  No PostgreSQL-specific DDL is used anywhere, so this is a low-risk gap,
-  but it has not been empirically verified against real Postgres.
+- **Celery beat / periodic schedule polling**: implemented as
+  `enqueue_due_schedules` and committed.
+- **Pre-signed S3/MinIO upload URL generation**: implemented as a
+  backend endpoint plus media metadata persistence, committed.
+- **Frontend page wiring**: Clients, Calendar, Approvals, Analytics, and
+  Media/AI Studio pages are all implemented and committed.
+- **Token encryption at rest**: `PlatformAccount.access_token` and
+  `refresh_token` are encrypted at the SQLAlchemy boundary using Fernet,
+  with two Alembic migrations for backfill/rotation, committed.
+- **PostgreSQL empirical verification**: not run in this environment due
+  to missing Docker/Postgres. Documented verification commands are in
+  `BUILD_REPORT.md`.
 
 ## Recommended next steps to extend toward full spec
 

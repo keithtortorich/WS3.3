@@ -103,6 +103,11 @@ class Settings(BaseSettings):
     GOOGLE_BUSINESS_CLIENT_ID: str = ""
     GOOGLE_BUSINESS_CLIENT_SECRET: str = ""
 
+    # --- Security / Token encryption ---
+    # Must be a valid Fernet key. Leave empty only in non-production test
+    # environments where encrypted storage is not required.
+    OAUTH_TOKEN_ENCRYPTION_KEY: str = ""
+
     # --- Celery / Worker tuning ---
     CELERY_TASK_ALWAYS_EAGER: bool = False
     CELERY_WORKER_CONCURRENCY: int = 4

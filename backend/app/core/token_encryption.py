@@ -1,4 +1,4 @@
-"""Column-level encryption for OAuth tokens.
+"""Encryption utilities for OAuth token storage.
 
 Best practice: use a single application-level key for existing rows.
 New row writes always use the encrypted path regardless of initial key source.

@@ -26,6 +26,7 @@ from app.events.bus import event_bus
 from app.events.domain_events import Published, PublishFailed
 from app.models.enums import PlatformName, PublishJobStatus
 from app.models.publish_job import PublishJob
+from app.models.schedule import Schedule
 from app.social.factory import get_social_adapter
 from app.social.schemas import PublishContentRequest
 from app.workers.celery_app import celery_app
@@ -169,3 +170,44 @@ def retry_publish_job_with_backoff(job_id: str) -> None:
             execute_publish_job.apply_async(args=[job_id], countdown=delay_seconds)
 
     asyncio.run(_check_and_retry())
+
+
+async def _enqueue_due_schedules_async() -> int:
+    session_factory = _make_session_factory()
+    async with session_factory() as session:
+        stmt = (
+            select(Schedule)
+            .where(Schedule.scheduled_at <= datetime.now(timezone.utc))
+            .where(Schedule.is_cancelled == False)  # noqa: E712
+            .order_by(Schedule.scheduled_at.asc())
+            .limit(500)
+        )
+        due = (await session.execute(stmt)).scalars().all()
+        if not due:
+            return 0
+
+        from app.models.platform_account import PlatformAccount
+
+        enqueued = 0
+        for schedule in due:
+            job = PublishJob(
+                organization_id=schedule.organization_id,
+                post_id=schedule.post_id,
+                platform_account_id=schedule.platform_account_id,
+                status=PublishJobStatus.QUEUED,
+            )
+            session.add(job)
+            schedule.is_cancelled = True
+            enqueued += 1
+
+        await session.commit()
+        return enqueued
+
+
+@celery_app.task(name="publish.enqueue_due_schedules")
+def enqueue_due_schedules() -> int:
+    """Celery beat-polled task: enqueue PublishJobs for due Schedule rows.
+
+    Returns the number of schedules converted into publish jobs in this run.
+    """
+    return asyncio.run(_enqueue_due_schedules_async())

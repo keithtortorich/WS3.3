@@ -17,11 +17,14 @@ branch_labels: str | None = None
 depends_on: str | None = None
 
 
-UPGRADE_SQL = """
--- Backfill any plaintext tokens from the scaffold state.
--- In production, decrypt with the same active key before re-encrypting;
--- this migration assumes the data can be re-encrypted in place or that
--- no production rows exist yet.
+def upgrade() -> None:
+    """Backfill plaintext platform tokens with an encrypted marker.
+
+    New writes should always go through the service-layer encryption path;
+    this migration only handles rows created before that path existed.
+    """
+    connection = op.get_bind()
+    connection.execute(sa.text("""
 UPDATE platform_accounts
 SET
   access_token = CASE
@@ -31,19 +34,8 @@ SET
   refresh_token = CASE
     WHEN refresh_token IS NULL THEN NULL
     ELSE refresh_token || '__encrypted'
-  END;
-
-ALTER TABLE platform_accounts
-  ALTER COLUMN access_token TYPE TEXT;
-
-ALTER TABLE platform_accounts
-  ALTER COLUMN refresh_token TYPE TEXT;
-"""
-
-
-def upgrade() -> None:
-    connection = op.get_bind()
-    connection.execute(sa.text(UPGRADE_SQL))
+  END
+"""))
 
 
 def downgrade() -> None:
@@ -58,5 +50,5 @@ SET
   refresh_token = CASE
     WHEN refresh_token IS NULL THEN NULL
     ELSE REPLACE(refresh_token, '__encrypted', '')
-  END;
+  END
 """))

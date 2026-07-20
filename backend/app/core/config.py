@@ -90,8 +90,6 @@ class Settings(BaseSettings):
     # --- Social platform stubs ---
     FACEBOOK_APP_ID: str = ""
     FACEBOOK_APP_SECRET: str = ""
-    INSTAGRAM_APP_ID: str = ""
-    INSTAGRAM_APP_SECRET: str = ""
     X_API_KEY: str = ""
     X_API_SECRET: str = ""
     THREADS_APP_ID: str = ""

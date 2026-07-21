@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import select
@@ -28,7 +28,7 @@ async def _make_schedule(db_session, scheduled_at: datetime, cancelled: bool = F
 
 @pytest.mark.asyncio
 async def test_enqueue_no_due_schedules_returns_zero(db_session):
-    enqueued = await _enqueue_due_schedules_async()
+    enqueued = await _enqueue_due_schedules_async(session=db_session)
     assert enqueued == 0
 
     jobs = (await db_session.execute(select(PublishJob))).scalars().all()
@@ -41,7 +41,7 @@ async def test_enqueue_single_due_schedule_creates_publish_job_and_cancels_sched
     schedule = await _make_schedule(db_session, scheduled_at=scheduled_at)
     await db_session.commit()
 
-    enqueued = await _enqueue_due_schedules_async()
+    enqueued = await _enqueue_due_schedules_async(session=db_session)
     assert enqueued == 1
 
     job = (
@@ -61,12 +61,12 @@ async def test_enqueue_single_due_schedule_creates_publish_job_and_cancels_sched
 
 @pytest.mark.asyncio
 async def test_enqueue_skips_future_schedules(db_session):
-    future = datetime.now(timezone.utc)
+    future = datetime.now(timezone.utc) + timedelta(minutes=5)
     future_schedule = await _make_schedule(db_session, scheduled_at=future)
     due = await _make_schedule(db_session, scheduled_at=datetime.now(timezone.utc))
     await db_session.commit()
 
-    enqueued = await _enqueue_due_schedules_async()
+    enqueued = await _enqueue_due_schedules_async(session=db_session)
     assert enqueued == 1
 
     jobs = (await db_session.execute(select(PublishJob))).scalars().all()
@@ -79,7 +79,7 @@ async def test_enqueue_skips_already_cancelled_schedules(db_session):
     await _make_schedule(db_session, scheduled_at=datetime.now(timezone.utc), cancelled=True)
     await db_session.commit()
 
-    enqueued = await _enqueue_due_schedules_async()
+    enqueued = await _enqueue_due_schedules_async(session=db_session)
     assert enqueued == 0
 
 
@@ -91,7 +91,7 @@ async def test_enqueue_multiple_due_schedules_ordered_by_scheduled_at(db_session
     s2 = await _make_schedule(db_session, scheduled_at=later)
     await db_session.commit()
 
-    enqueued = await _enqueue_due_schedules_async()
+    enqueued = await _enqueue_due_schedules_async(session=db_session)
     assert enqueued == 2
 
     jobs = (

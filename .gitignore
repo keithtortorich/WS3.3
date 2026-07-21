@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+
+# SQLite runtime data (never commit generated/local databases)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Local secrets
+.env
+.env.*
+!.env.example
+.vercel
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Editor/IDE
+.vscode-test

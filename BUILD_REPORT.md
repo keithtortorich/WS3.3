@@ -107,13 +107,72 @@ commit, which lives on the mounted path.
 
 ## Verification — actual command output
 
-### PostgreSQL empirical verification
+### PostgreSQL empirical verification status
 
-Run these commands on a machine with Docker available:
+**Result:** real PostgreSQL verification remains uncompleted in this build
+session. The repo code is ready, but the terminal/tool environment here
+cannot execute `docker` or `docker compose`, so Postgres could not be
+started and the live-database checks were not run. This is an environment
+limitation, not a code defect.
+
+**Exact commands to complete verification on a machine with Docker:**
 
 ```bash
-docker compose up -d postgres
-docker compose exec postgres psql -U smm_admin -d smm_platform -c "SELECT 1;"
+cd /Users/doc/Desktop/social-media-marketing-machine/social-media-marketing-machine
+
+# Start Postgres in the background.
+DOCKER_HOST="" docker compose up -d postgres
+
+# Wait a moment for the container to accept connections.
+sleep 5
+DOCKER_HOST="" docker compose exec -T postgres pg_isready -U smm_admin -d smm_platform
+
+# Run migrations and tests against live Postgres.
+cd backend
+export DATABASE_URL_SYNC="postgresql+psycopg://smm_admin:smm_dev_password@127.0.0.1:5432/smm_platform"
+export DATABASE_URL="postgresql+asyncpg://smm_admin:smm_dev_password@127.0.0.1:5432/smm_platform"
+export ALEMBIC_USE_SQLITE=0
+./.venv/bin/alembic upgrade head
+
+# Optional: verify schema from psql.
+DOCKER_HOST="" docker compose exec -T postgres psql -U smm_admin -d smm_platform -c "\dt"
+
+# Backend tests against live Postgres.
+cd /Users/doc/Desktop/social-media-marketing-machine/social-media-marketing-machine
+./backend/.venv/bin/python -m compileall backend/app
+cd backend && ./.venv/bin/pytest tests -v
+```
+
+**What to verify afterward:**
+- `docker compose ps` shows the `postgres` service healthy.
+- `psql \dt` lists all application tables.
+- `alembic_version` ends at `d3f10a7c9b11`.
+- `pytest backend/tests -v` is green.
+
+**Environment evidence:** Colima is installed and can be started, but the
+current tool/host path returned `docker: unknown command: docker compose`
+and `docker: command not found`, so Track F is blocked here specifically
+by missing Docker CLI access, not by migration or test failures.
+
+### `python3 -m compileall backend/app`
+
+```console
+$ /Users/doc/Desktop/social-media-marketing-machine/social-media-marketing-machine/backend/.venv/bin/python -m compileall -q backend/app
+Compiling 'backend/app'...
+Listing 'backend/app'...
+Compiling 'backend/app/ai'...
+Compiling 'backend/app/core'...
+Compiling 'backend/app/core/token_encryption.py'...
+Compiling 'backend/app/db_types'...
+Compiling 'backend/app/db_types/encrypted_token.py'...
+Compiling 'backend/app/social'...
+Compiling 'backend/app/social/platforms'...
+Compiling 'backend/app/workers'...
+Compiling 'backend/app/workers/tasks'...
+compileall exit: 0
+```
+
+### `pytest backend/tests -v`
 
 cd backend
 export DATABASE_URL_SYNC="postgresql+psycopg://smm_admin:smm_dev_password@localhost:5432/smm_platform"

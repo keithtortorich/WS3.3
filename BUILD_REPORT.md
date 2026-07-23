@@ -379,3 +379,106 @@ itself (verified via `git log -1 --format=%H` and a clean `git status` at
 that path) — it is the real, authoritative deliverable history, not a
 mirror. See the Environment note at the top of this report for how the
 FUSE lock-file issue was worked around to land it.
+
+
+---
+
+## Correction — 2026-07-23 (real Postgres + live-service verification)
+
+Everything above this line is the original build-session report and is
+left as-is per this repo's append-only convention — it accurately
+describes what happened *in that session*, including its honest statement
+that Postgres verification was never completed. That gap, plus drift from
+16 commits of real feature work since, made several of its headline claims
+stale. This section corrects them against directly-verified current state
+(current commit `6fb5dc3`, not `b29f864`).
+
+### What was actually wrong
+
+- **Test count/environment.** The report's final number, "20/20 passed,"
+  was against SQLite, explicitly because Postgres was unavailable in that
+  session. A later commit (`acd37fa`) claimed in its message to update
+  this file's final-commit hash "after Track F fixes" — it did not touch
+  this file, and Track F (Postgres verification) was never actually
+  completed. The real reason: `acd37fa`'s own migration
+  (`6c2bff6f48c0_seed_marketing_agents.py`) branched off an older revision
+  instead of the token-encryption chain that was already head three days
+  earlier, leaving two unmerged Alembic heads. `alembic upgrade head`
+  failed outright against any real database as a result — this is why
+  Track F silently never happened despite the misleading commit message.
+- **Fixed this session:** a merge migration (`a1b4bb27ec5c`, commit
+  `06ffddb`) resolves the diverged heads. `alembic upgrade head` now
+  succeeds against real PostgreSQL (verified via a live Docker Compose
+  Postgres container, not SQLite).
+- **Real, current test result:** `pytest tests/ -v` against that live
+  Postgres database: **46 passed in 4.05s**, not 20 and not the
+  previously-assumed 42. Confirmed the suite was actually hitting Postgres
+  (not silently falling back to SQLite) via a direct `psql \dt` — all 24
+  expected tables present, plus `alembic_version` stamped at the merge
+  head.
+- **Live-service verification was never done, in either session.**
+  Neither the original build nor any later session had actually started
+  the FastAPI app or the Next.js dev server and hit them with a real
+  request. Done this session:
+  - **Backend:** `uvicorn app.main:app` against the live Postgres
+    container. Clean startup, no lifespan errors. `GET /healthz` →
+    `200 {"status":"ok","env":"development"}`. Protected routes
+    (`/api/v1/clients`, `/api/v1/agents`) correctly return a structured
+    `401` with no session, proving Clerk's backend JWT middleware is wired
+    and actually executing, not bypassed.
+  - **Frontend:** `npm run dev` crashed with a `500` on *every* route,
+    including `/`. Root cause: `EvalError: Code generation from strings
+    disallowed for this context`, thrown inside `clerkMiddleware()`
+    during edge-runtime evaluation — a known incompatibility between
+    `@clerk/nextjs@5.7.6` (what was installed) and Next 14's edge sandbox.
+    Reproduced identically with valid placeholder Clerk keys present,
+    ruling out a missing-config explanation. This went undetected in the
+    original build because that session only ran `npm run build` (static
+    production build), which doesn't exercise the edge middleware runtime
+    the same way `next dev` does — so the frontend "works" claim was true
+    for the build step and silently false for actually running the app.
+    **Fixed:** upgraded to `@clerk/nextjs@6.39.6` and updated
+    `src/middleware.ts` for v6's `auth.protect()` API
+    (`auth().protect()` -> `await auth.protect()`). Commit `6fb5dc3`.
+    Verified after the fix: middleware compiles and runs without error,
+    `/sign-in` (public route) returns a real `200` render, protected
+    routes return Clerk's `signed-out`/`protect-rewrite` auth headers
+    (the correct dev-mode behavior for an unauthenticated request)
+    instead of crashing.
+- **README.md's "42/42 backend tests passing against real PostgreSQL"
+  claim was false** — there is no evidence this was ever actually run;
+  the Alembic merge conflict above would have blocked it identically.
+  README.md is being corrected in the same pass as this file.
+- **Router/endpoint counts were stale.** "11 routers (25 total endpoints)"
+  is now 13 router files / 46 endpoint definitions — `agent_templates.py`
+  (added in `acd37fa`, the same commit with the misleading message) was
+  never reflected in this report's "what was built" section.
+- **Adapter path in the README hand-off prompt was wrong.**
+  `app/services/social_platforms/` does not exist; the real location is
+  `app/social/platforms/`.
+
+### New, separate finding — not fixed here
+
+`npx tsc --noEmit` currently reports 9 real type errors in
+`approvals-table.tsx`, `media-library.tsx`, and `useApprovals.ts`
+(implicit-`any`s, a missing `@/types/media` module, a missing `Page`
+export from `@/types/approval`, an undefined `Badge` reference). This
+contradicts this report's original "tsc: 0 errors" claim, which was true
+at `b29f864` and has drifted since — most likely introduced during the
+Track D frontend-wiring work. Unrelated to the Clerk fix (different
+components, no shared imports). Tracked as open work, not fixed in this
+pass.
+
+### Current verified state, as of commit `6fb5dc3`
+
+- Backend: 46/46 tests passing against live PostgreSQL. `/healthz` and
+  auth-gated routes confirmed working against a real running server.
+- Frontend: dev server boots and serves real pages; Clerk auth middleware
+  confirmed functioning correctly (not just "builds"). 9 pre-existing
+  `tsc` errors remain open (see above). Vitest: 2/2 passing, unaffected.
+- Migrations: single merged head (`a1b4bb27ec5c`), no outstanding branch
+  conflicts.
+- No `agent_templates.py` router/model/feature was documented in this
+  report's original sections; still not retrofitted into the numbered
+  "what was built" list above — noted here as the accurate current state
+  instead of rewriting that history.

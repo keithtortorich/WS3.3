@@ -6,9 +6,16 @@ schedules, publishes, and measures campaigns for the accounts
 WebStaffr manages. Use it as the social-media sub-agent inside the
 WebStaffr stack, not as a standalone SaaS.
 
-> **Status:** production-grade scaffold, verified working (42/42 backend
-> tests passing against real PostgreSQL; build/tests green as of latest
-> commit). See `BUILD_REPORT.md` for the full record.
+> **Status:** production-grade scaffold, verified working end-to-end as of
+> commit `6fb5dc3` — 46/46 backend tests passing against a live
+> PostgreSQL database, backend server confirmed running (`/healthz` +
+> auth-gated routes checked directly), frontend dev server confirmed
+> running with working Clerk auth middleware. The previously-claimed
+> "42/42 against real PostgreSQL" was never actually run; see the
+> 2026-07-23 correction section in `BUILD_REPORT.md` for what was found
+> and fixed, including a real frontend startup bug that had gone
+> undetected. 9 pre-existing `tsc` errors remain open (also documented
+> there) and are unrelated to auth/middleware.
 
 ## Stack
 
@@ -18,9 +25,10 @@ WebStaffr stack, not as a standalone SaaS.
   shadcn/ui, TanStack Query, Clerk, Framer Motion.
 - **AI:** pluggable provider abstraction (Ollama fully implemented locally;
   OpenAI/Claude/Gemini/Grok/Hermes typed stubs).
-- **Social:** pluggable platform adapter abstraction (LinkedIn fully
-  implemented; Facebook/Instagram/X/Threads/TikTok/Pinterest/YouTube/Google
-  Business typed stubs).
+- **Social:** pluggable platform adapter abstraction at
+  `backend/app/social/platforms/` (LinkedIn and Instagram fully
+  implemented; Facebook/X/Threads/TikTok/Pinterest/YouTube/Google Business
+  typed stubs).
 
 ## Quick start (Docker Compose)
 
@@ -79,12 +87,15 @@ commit, and continue work immediately.
 what's stubbed, exact verification output) → `docs/ARCHITECTURE.md` (module
 boundaries and adapter patterns) → `docs/DEVELOPMENT.md` (local setup).
 
-### Prompt to give the next agent
+### Prompt given to the previous agent (historical — all 6 tracks now complete)
 
-Copy-paste the block below as the opening prompt. It's written to be run
-by an agent capable of spawning sub-agents (parallel workers), so the six
-remaining work items are split into independent tracks with no file overlap
-— safe to run concurrently.
+All six tracks below are done as of commit `6fb5dc3` (confirmed by
+directly reading the code and running the tests, not by trusting old
+commit messages — see `BUILD_REPORT.md`'s 2026-07-23 correction section
+for what was actually verified). Kept here for history, not as an active
+task list. The block was originally written to be run by an agent capable
+of spawning sub-agents (parallel workers), splitting the six items into
+independent tracks with no file overlap.
 
 ```
 You are continuing work on **Social Media Marketing Machine**, the
@@ -118,14 +129,13 @@ TRACK A — Close the scheduled-publish loop
   "publish later" path. Add a unit test for the beat task's due-row query
   logic.
 
-TRACK B — Second social platform adapter
-  Implement the Instagram adapter fully (app/services/social_platforms/),
-  following the LinkedIn adapter as the reference pattern (OAuth2, publish/
-  schedule/delete/update/fetch_metrics/validate_media, real API calls via
-  httpx, media constraint validation). Instagram shares Meta's Graph API
-  with the already-documented Facebook stub — use that stub's docstring
-  notes as your API reference starting point. Mirror the LinkedIn adapter's
-  test file structure.
+TRACK B — Second social platform adapter (DONE — see below)
+  Instagram adapter is fully implemented at
+  backend/app/social/platforms/instagram.py (not app/services/
+  social_platforms/ as this prompt originally said — that path never
+  existed). Mirrors the LinkedIn adapter's pattern and test structure
+  (backend/tests/unit/test_instagram_adapter.py, 13 tests, all passing).
+  Left here for historical reference only.
 
 TRACK C — Media upload pipeline
   Add a pre-signed S3/MinIO upload URL generation endpoint to the media

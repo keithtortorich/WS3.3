@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/campaigns", label: "Campaigns" },
   { href: "/calendar", label: "Calendar" },
   { href: "/media", label: "AI Studio" },
+  { href: "/agents", label: "Agents" },
   { href: "/approvals", label: "Approvals" },
   { href: "/analytics", label: "Analytics" },
   { href: "/settings", label: "Settings" },

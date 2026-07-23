@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.exceptions import AppError, app_error_handler, unhandled_exception_handler
 from app.routers import (
+    agent_templates,
     analytics,
     approvals,
     auth,
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(publish.router)
     app.include_router(approvals.router)
     app.include_router(notifications.router)
+    app.include_router(agent_templates.router)
 
     @app.get("/healthz", tags=["health"])
     async def health_check() -> dict:

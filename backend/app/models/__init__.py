@@ -35,6 +35,7 @@ from app.models.publish_job import PublishJob
 from app.models.analytics import Analytics
 from app.models.ai_request import AIRequest
 from app.models.prompt_template import PromptTemplate
+from app.models.agent_template import AgentTemplate
 from app.models.audit_log import AuditLog
 from app.models.notification import Notification
 
@@ -70,6 +71,7 @@ __all__ = [
     "Analytics",
     "AIRequest",
     "PromptTemplate",
+    "AgentTemplate",
     "AuditLog",
     "Notification",
 ]

@@ -1,8 +1,9 @@
 # Build Report — Social Media Marketing Machine
 
-This report documents what was actually built and verified in this scaffold
-build session. All command output below is real, captured during the
-build — not paraphrased.
+This report documents what was actually built and verified in this build
+session. All command output below is real, captured during the build —
+not paraphrased. This repo is treated as the social-media manager agent
+for WebStaffr rather than a standalone SaaS.
 
 ## Environment note
 

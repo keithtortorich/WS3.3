@@ -1,12 +1,14 @@
 # Social Media Marketing Machine
 
-A multi-tenant SaaS platform that lets marketing agencies manage multiple
-clients and use AI to create, approve, schedule, and publish social media
-campaigns across platforms.
+Social media manager agent for **WebStaffr**. This repo is the
+hands-on social media automation layer: it creates, approves,
+schedules, publishes, and measures campaigns for the accounts
+WebStaffr manages. Use it as the social-media sub-agent inside the
+WebStaffr stack, not as a standalone SaaS.
 
-> **Status:** production-grade scaffold, verified working (20/20 backend
-> tests passing, frontend build clean). See `BUILD_REPORT.md` for the full
-> record of what's implemented, what's stubbed, and how it was verified.
+> **Status:** production-grade scaffold, verified working (42/42 backend
+> tests passing against real PostgreSQL; build/tests green as of latest
+> commit). See `BUILD_REPORT.md` for the full record.
 
 ## Stack
 
@@ -85,12 +87,13 @@ remaining work items are split into independent tracks with no file overlap
 — safe to run concurrently.
 
 ```
-You are continuing work on "Social Media Marketing Machine," a multi-tenant
-SaaS scaffold for marketing agencies (FastAPI + SQLAlchemy 2.0 + PostgreSQL
-+ Celery/Redis backend, Next.js + TypeScript + Tailwind + shadcn/ui
-frontend). The scaffold is complete and verified: 20/20 backend tests pass,
-frontend tsc/build/tests are clean. Read BUILD_REPORT.md, docs/ARCHITECTURE.md,
-and docs/DEVELOPMENT.md before touching anything.
+You are continuing work on **Social Media Marketing Machine**, the
+social-media manager agent inside **WebStaffr**. It is not a standalone
+SaaS here; it is the social media automation sub-agent for WebStaffr.
+It creates, approves, schedules, publishes, and measures campaigns for
+the accounts WebStaffr manages. Read `BUILD_REPORT.md`,
+`docs/ARCHITECTURE.md`, and `docs/DEVELOPMENT.md` before touching
+anything.
 
 Ground rules for all work below (non-negotiable, matches the existing
 codebase's standard):

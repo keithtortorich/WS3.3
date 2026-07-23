@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,19 +32,14 @@ export function ApprovalsTable({ token }: { token?: string }) {
 
   const { data, isLoading, isError, error, refetch } = useApprovals({ postId, token });
 
-  const availableTargets = postId.trim().length > 0 ? (TRANSITIONS[data?.items?.[0]?.status ?? "draft"] ?? []) : (TRANSITIONS.draft ?? []);
-
-  const uniqueStatuses = Array.from(new Set((data?.items ?? []).map((item) => item.status)));
-
-  useEffect(() => {
-    if (uniqueStatuses.length > 0) {
-      const first = uniqueStatuses[0].toLowerCase().replace(" ", "_") as PostStatus;
-      if (first in TRANSITIONS) {
-        setTargetStatus(first);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uniqueStatuses.join("|")]);
+  // Approval.status (pending/approved/rejected/changes_requested — a review
+  // decision, see backend/app/models/enums.py::ApprovalStatus) is a
+  // different concept from Post.status (draft/internal_review/... — the
+  // workflow state TRANSITIONS is keyed by, see PostStatus). This endpoint
+  // only returns approval-history rows, not the post's own status, so we
+  // can't derive a specific "current" post state here — offer every legal
+  // starting transition instead of guessing one from the wrong field.
+  const availableTargets = TRANSITIONS.draft ?? [];
 
   const submitTransition = async () => {
     if (!postId.trim()) return;

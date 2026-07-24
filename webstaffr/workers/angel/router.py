@@ -28,7 +28,9 @@ from .api_auth import SharedSecretVerifier, book_api_verifier_from_env, ghl_webh
 from .ghl import GHLClient
 from .retell import RetellWebhookVerifier
 from .retell_router import create_retell_router
+from .social_media_router import social_media_router
 from .voice import VoiceBackend
+from .workflow_graph_router import create_workflow_graph_router
 
 try:  # optional in minimal test/runtime envs without ServiceTitan configured
     from ...integrations.servicetitan import ServiceTitanSync as _ServiceTitanSync
@@ -111,6 +113,24 @@ class BookAppointmentResponse(BaseModel):
     ghl_synced: bool
 
 
+class SocialMediaMountRequest(BaseModel):
+    tenant_id: str
+    social_tenant_id: str
+    platforms: list[str]
+    default_brand_id: Optional[str] = None
+    mode: str = "agent_managed"
+
+
+class SocialMediaIntentRequest(BaseModel):
+    campaign_intent: dict
+    post_draft: dict
+
+
+# Was accidentally deleted when SocialMediaMountRequest/SocialMediaIntentRequest
+# were added above (both edits landed in the same spot during Block 2's work) --
+# restored here since /webhooks/ghl below still depends on it. Found via the
+# real test regression this caused (TestGHLWebhookEndpoint and related tests
+# failing with NameError), not by inspection alone.
 SUPPORTED_EVENT_TYPES = {"website_lead", "missed_call"}
 
 # Paths called directly from browser JS running on an arbitrary origin --
@@ -170,6 +190,7 @@ def create_app(
     retell_verifier: Optional[RetellWebhookVerifier] = None,
     ghl_webhook_verifier: Optional[SharedSecretVerifier] = None,
     book_api_verifier: Optional[SharedSecretVerifier] = None,
+    workflow_graph_verifier: Optional[SharedSecretVerifier] = None,
 ) -> FastAPI:
     """Factory rather than a module-level app instance, so tests (and
     Docker, and any future multi-tenant deployment shape) can construct an
@@ -203,6 +224,8 @@ def create_app(
     app.include_router(intake_router)
     app.include_router(site_router)
     app.include_router(attribution_router)
+    app.include_router(social_media_router)
+    app.include_router(create_workflow_graph_router(verifier=workflow_graph_verifier))
     # /retell/* is server-to-server only (Retell calling this app, not a
     # browser) -- intentionally not added to ScopedCORSMiddleware's paths,
     # same reasoning as /book and /webhooks/ghl.

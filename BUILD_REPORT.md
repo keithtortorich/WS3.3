@@ -482,3 +482,71 @@ pass.
   report's original sections; still not retrofitted into the numbered
   "what was built" list above — noted here as the accurate current state
   instead of rewriting that history.
+
+---
+
+## Correction — 2026-07-24 (execution graph, WS3.3 bridge, tenant-scoping fixes)
+
+Appended, not rewritten, per this report's existing convention. The "46/46" and
+`6fb5dc3` figures above are superseded; they were accurate when written.
+
+### Current verified state, as of commit `73b0f34`
+
+- Backend: **155/155 tests passing.** Run by the orchestrator after integrating
+  four parallel agents' work, not quoted from any agent's own report.
+- Migrations: single head **`e00c25c0041f`**, `upgrade → downgrade -1 → upgrade`
+  round-trip verified on SQLite.
+- App boots and serves **32 paths**, including the WS3.3 bridge endpoints.
+- Remote: `github.com/keithtortorich/smmm`, branch `main`, verified in sync by
+  reading the remote back. Before this date the repo had no remote at all.
+
+### What the earlier reports got wrong
+
+`BUILD_REPORT.md` and the handoff both stated that no `execution_nodes` table
+existed and that the model still needed writing. The model, repository, schema,
+service, router file, and tests all already existed as uncommitted work. The
+actual blocker was that `execution_node.py` was never imported in
+`app/models/__init__.py`, so the table was absent from `Base.metadata` —
+`alembic revision --autogenerate` therefore produced an **empty** migration, and
+the test suite built its schema from metadata that did not include the table.
+Both symptoms looked like "it works"; neither did.
+
+Priorities 4 and 5 of that handoff were likewise described as unbuilt.
+Publishing, scheduling, Celery workers, calendar, and analytics all already
+existed. The work on 2026-07-24 was hardening them, not creating them.
+
+### Defects found and fixed
+
+**Publishing had no tenant scoping.** `execute_publish_job` and
+`retry_publish_job_with_backoff` loaded `PublishJob`, `Post`, and
+`PlatformAccount` by primary key with **no `organization_id` filter** — any job
+id could publish any tenant's content. Exceptions were caught and never
+re-raised, so failures never surfaced. There was no idempotence, so a
+redelivered task double-published. A `DRAFT` post could be published. All closed;
+idempotence is now an atomic database claim, which holds across worker processes.
+
+**Published posts silently vanished from the calendar.** The enqueue sweep
+overloaded `Schedule.is_cancelled = True` to mean "already consumed", and
+`GET /api/v1/calendar` filters on `is_cancelled`. Fixed with a dedicated
+`schedules.enqueued_at` column. Worth recording how this nearly shipped broken:
+the first fix converted only one of the two consume sites, and the suite stayed
+green because the existing tests asserted the *old* behavior. Caught by testing
+the symptom — querying with the same predicate the calendar router uses.
+
+**Approval bypass was possible in principle.** `post.status` is now
+structurally unwritable outside `ApprovalStateMachine`, enforced by a
+`ContextVar` + `@validates` guard on the model and verified non-vacuous by
+direct experiment. `record_decision` also no longer persists an orphan
+`Approval` row when the implied transition is illegal.
+
+**Analytics week buckets varied by server configuration.** `date_trunc('week', ...)`
+on a `timestamptz` truncates in the session time zone. Found by running the
+aggregation against a real throwaway PostgreSQL instance, not by inspection.
+Pinned with `AT TIME ZONE 'UTC'`.
+
+### Still not verified
+
+No post has been published to a live LinkedIn or Instagram account. Every
+adapter was faked in every test and no network call was made. All platform
+integration remains `[Unverified]`. Facebook, X, Threads, TikTok, Pinterest,
+YouTube, and Google Business are still stubs.

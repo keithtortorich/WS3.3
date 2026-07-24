@@ -3,8 +3,20 @@
 You are continuing work on the SMM agent: the operational execution layer for social media
 campaigns inside the WebStaffr stack. Not a standalone SaaS.
 
-**Read `SESSION_STATUS_2026-07-24.md` first.** It is the verified state as of the last
-session. This file is the orientation; that one is the evidence.
+**Read `TASKS.md` first** — live status, numbered, every "done" backed by a real command.
+Then `SESSION_STATUS_2026-07-24.md` for the evidence behind it. This file is orientation:
+how the system fits together and where the landmines are.
+
+Document map:
+| File | What it is |
+|---|---|
+| `TASKS.md` | Live status. Single source of truth for what's done and what's next. |
+| `SESSION_STATUS_2026-07-24.md` | Verified evidence from the last session. |
+| `HANDOFF.md` (this) | Orientation, invariants, traps. |
+| `BUILD_REPORT.md` | Append-only build history. Add dated corrections; never rewrite. |
+| `INTEGRATION_PLAN.md` | The WS3.3 bridge contract and why the identity models stay separate. |
+| `docs/sql/execution_nodes.sql` | Model-aligned DDL + operational queries. |
+| `docs/sql/smm_gtm_bridge.sql` | Design intent **only** — has known bugs, see trap 5. |
 
 ---
 
@@ -88,6 +100,25 @@ and name your foreign keys — autogenerate emits `drop_constraint(None, ...)` i
 Always verify: `upgrade head` → `downgrade -1` → `upgrade head`.
 
 ---
+
+## Where things live
+
+```
+backend/app/
+  models/          SQLAlchemy models. NEW MODELS MUST BE IMPORTED IN __init__.py.
+  repositories/    Data access. OrgScopedRepository is the tenant-scoping backstop.
+  routers/         HTTP. Register new routers in BOTH main.py and routers/__init__.py.
+  services/        approval_state_machine.py (status authority)
+                   workflow_service.py       (execution graph)
+                   integration_service.py    (WS3.3 intake)
+  workers/tasks/   publish_tasks.py — Celery publish/retry/sweep
+  core/            db.py, auth.py (Clerk), db_types.py (cross-dialect), sql_functions.py
+  alembic/versions/  412a32e37eb2 → 11bbfaf5a443 → e00c25c0041f (current head)
+```
+
+Routers are registered in two places. Adding to only one leaves the endpoint unreachable
+while everything still imports and every test passes — this bit the execution_nodes router,
+which sat imported-but-unregistered and contributed zero live paths.
 
 ## What works end to end today
 

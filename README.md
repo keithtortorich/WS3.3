@@ -6,7 +6,20 @@ schedules, publishes, and measures campaigns for the accounts
 WebStaffr manages. Use it as the social-media sub-agent inside the
 WebStaffr stack, not as a standalone SaaS.
 
-> **Status:** production-grade scaffold, verified working end-to-end as of
+> **Status (2026-07-24, commit `73b0f34`):** 155/155 backend tests passing,
+> single Alembic head `e00c25c0041f`, app serving 32 paths. The WS3.3 intake
+> bridge is in place, so campaign intent from WebStaffr3.3 now materializes as
+> a reviewable campaign with posts, approvals, and an execution graph. See
+> `SESSION_STATUS_2026-07-24.md` for the evidence, `TASKS.md` for live status,
+> and `HANDOFF.md` to pick up the work.
+>
+> **Not yet true:** no post has ever been published to a real LinkedIn or
+> Instagram account. Every platform adapter is faked in every test; all
+> platform integration is `[Unverified]` against live vendor credentials.
+>
+> <details><summary>Prior status (superseded, kept for history)</summary>
+>
+> Production-grade scaffold, verified working end-to-end as of
 > commit `6fb5dc3` — 46/46 backend tests passing against a live
 > PostgreSQL database, backend server confirmed running (`/healthz` +
 > auth-gated routes checked directly), frontend dev server confirmed
@@ -16,6 +29,8 @@ WebStaffr stack, not as a standalone SaaS.
 > and fixed, including a real frontend startup bug that had gone
 > undetected. 9 pre-existing `tsc` errors remain open (also documented
 > there) and are unrelated to auth/middleware.
+>
+> </details>
 
 ## Stack
 

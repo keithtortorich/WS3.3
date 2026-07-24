@@ -149,13 +149,18 @@ and exercises no API despite the name.
 
 ## Repository state
 
-**This repo has no git remote configured.** It is local-only on the founder's machine —
-there is no GitHub origin, so nothing has ever been pushed. Work is committed to the
-`ws3.3` branch (`master` also exists). If the founder wants this backed up or shared,
-creating the remote is his action, not Claude's.
+Remote: `https://github.com/keithtortorich/smmm` (private). Branch `main`, verified in
+sync at `74e9fb1` by reading the remote back, not by trusting push output. Until
+2026-07-24 this repo had no remote at all and existed only on the founder's laptop.
+
+The local branch was renamed `ws3.3` → `main` the same day. **Do not confuse this repo
+with WebStaffr3.3** — the old branch name caused exactly that mistake once already, and
+`https://github.com/keithtortorich/WS3.3` is a *different* project's remote. A stale local
+`master` branch (`2f8b485`) still exists; `main` contains all of it and is 14 commits
+ahead, so `master` can be deleted whenever convenient.
 
 Related repos:
-- `/Users/doc/Desktop/WebStaffr3.3` — WS3.3, the other half of the bridge. Its social
-  media seam is committed at `d5b5277`.
+- `/Users/doc/Desktop/WebStaffr3.3` — WS3.3, the other half of the bridge, remote
+  `github.com/keithtortorich/WS3.3`. Its social media seam is committed at `d5b5277`.
 - `/Users/doc/Desktop/WebStaffr 3.0` — the older raw-SQL codebase. Different architecture;
   do not copy patterns between them.

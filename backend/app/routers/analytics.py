@@ -2,18 +2,29 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date, datetime, time, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_org
 from app.core.db import get_db
+from app.core.exceptions import NotFoundError
 from app.models.analytics import Analytics
-from app.models.post import Post
 from app.repositories.analytics_repository import AnalyticsRepository
-from app.schemas.analytics import AnalyticsRead, AnalyticsSnapshotCreate, CampaignAnalyticsSummary
+from app.repositories.campaign_repository import CampaignRepository
+from app.schemas.analytics import (
+    AnalyticsRead,
+    AnalyticsSnapshotCreate,
+    CampaignAnalyticsSummary,
+    CampaignWeeklyRollup,
+    WeeklyKPIBucket,
+)
 from app.schemas.common import Page
+
+
+def _start_of_day(value: date) -> datetime:
+    return datetime.combine(value, time.min, tzinfo=timezone.utc)
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
 
@@ -25,10 +36,15 @@ async def record_analytics_snapshot(
     db: AsyncSession = Depends(get_db),
 ) -> Analytics:
     """Record a point-in-time metrics snapshot for a Post (typically called
-    by the analytics-sync worker after polling a platform's stats API)."""
+    by the analytics-sync worker after polling a platform's stats API).
+
+    Snapshots are immutable: re-posting the same
+    ``(post_id, captured_at)`` returns 409 instead of duplicating or
+    overwriting the existing observation.
+    """
     repo = AnalyticsRepository(db)
     snapshot = Analytics(organization_id=uuid.UUID(org_id), **payload.model_dump())
-    snapshot = await repo.create(snapshot)
+    snapshot = await repo.create_snapshot(snapshot)
     await db.commit()
     await db.refresh(snapshot)
     return snapshot
@@ -64,29 +80,44 @@ async def campaign_analytics_summary(
     db: AsyncSession = Depends(get_db),
 ) -> CampaignAnalyticsSummary:
     """Aggregate rollup of all analytics snapshots for a campaign's posts."""
-    stmt = (
-        select(
-            func.count(func.distinct(Post.id)),
-            func.coalesce(func.sum(Analytics.impressions), 0),
-            func.coalesce(func.sum(Analytics.likes), 0),
-            func.coalesce(func.sum(Analytics.comments_count), 0),
-            func.coalesce(func.sum(Analytics.shares), 0),
-            func.coalesce(func.sum(Analytics.clicks), 0),
-            func.avg(Analytics.engagement_rate),
-        )
-        .select_from(Post)
-        .outerjoin(Analytics, Analytics.post_id == Post.id)
-        .where(Post.campaign_id == campaign_id, Post.organization_id == uuid.UUID(org_id))
+    organization_id = uuid.UUID(org_id)
+    summary = await AnalyticsRepository(db).campaign_summary(organization_id, campaign_id)
+    return CampaignAnalyticsSummary(campaign_id=campaign_id, **summary._asdict())
+
+
+@router.get("/campaigns/{campaign_id}/weekly", response_model=CampaignWeeklyRollup)
+async def campaign_weekly_rollup(
+    campaign_id: uuid.UUID,
+    start_date: date | None = Query(
+        default=None, description="Inclusive first day of the range (UTC)."
+    ),
+    end_date: date | None = Query(
+        default=None, description="Inclusive last day of the range (UTC)."
+    ),
+    org_id: str = Depends(get_current_org),
+    db: AsyncSession = Depends(get_db),
+) -> CampaignWeeklyRollup:
+    """Weekly KPI rollup for a campaign (``smm_gtm_bridge.sql`` section 4b).
+
+    Buckets are ISO weeks (Monday start). Weeks with no snapshots are
+    absent from the response rather than zero-filled; a range containing no
+    snapshots returns an empty ``weeks`` list, not an error.
+    """
+    organization_id = uuid.UUID(org_id)
+    campaign = await CampaignRepository(db).get_by_id(organization_id, campaign_id)
+    if campaign is None:
+        raise NotFoundError(f"Campaign {campaign_id} not found.")
+
+    start = _start_of_day(start_date) if start_date else None
+    # end_date is inclusive for the caller; the query bound is half-open.
+    end = _start_of_day(end_date + timedelta(days=1)) if end_date else None
+
+    rows = await AnalyticsRepository(db).weekly_rollup(
+        organization_id, campaign_id, start=start, end=end
     )
-    row = (await db.execute(stmt)).one()
-    total_posts, impressions, likes, comments_count, shares, clicks, avg_engagement = row
-    return CampaignAnalyticsSummary(
+    return CampaignWeeklyRollup(
         campaign_id=campaign_id,
-        total_posts=total_posts or 0,
-        total_impressions=impressions or 0,
-        total_likes=likes or 0,
-        total_comments=comments_count or 0,
-        total_shares=shares or 0,
-        total_clicks=clicks or 0,
-        average_engagement_rate=float(avg_engagement) if avg_engagement is not None else None,
+        start=start,
+        end=end,
+        weeks=[WeeklyKPIBucket(**row._asdict()) for row in rows],
     )

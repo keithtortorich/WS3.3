@@ -32,6 +32,14 @@ class Schedule(UUIDPkMixin, OrgScopedMixin, TimestampMixin, Base):
     )
     scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     is_cancelled: Mapped[bool] = mapped_column(default=False, nullable=False)
+    # Set when the enqueue sweep has consumed this schedule into a PublishJob.
+    # Kept distinct from ``is_cancelled`` on purpose: the sweep used to overload
+    # the cancel flag to stop re-enqueueing, which made a published schedule
+    # indistinguishable from a user-cancelled one and hid published posts from
+    # GET /api/v1/calendar (which filters on is_cancelled only).
+    enqueued_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     post: Mapped["Post"] = relationship(back_populates="schedules")
     platform_account: Mapped["PlatformAccount"] = relationship(back_populates="schedules")

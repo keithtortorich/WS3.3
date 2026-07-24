@@ -47,7 +47,9 @@ async def publish_now(
     # module import time (useful for tests that never touch this branch).
     from app.workers.tasks.publish_tasks import execute_publish_job
 
-    execute_publish_job.delay(str(job.id))
+    # tenant_id is passed explicitly: the worker re-scopes every query to it
+    # rather than trusting the job id alone.
+    execute_publish_job.delay(org_id, str(job.id))
     return job
 
 

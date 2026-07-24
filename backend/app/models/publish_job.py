@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db_types import GUID
@@ -25,6 +25,25 @@ class PublishJob(UUIDPkMixin, OrgScopedMixin, TimestampMixin, Base):
     """
 
     __tablename__ = "publish_jobs"
+
+    # At most one live job per (org, post, account). The enqueue sweep already
+    # skips duplicates in Python, but that is a read-then-write race across
+    # worker processes; this enforces it in the database, where it holds.
+    # Terminal rows (SUCCEEDED / FAILED / CANCELLED) are excluded so a post can
+    # legitimately be republished after an earlier attempt settles.
+    __table_args__ = (
+        Index(
+            "uq_publish_jobs_live_per_post_account",
+            "organization_id",
+            "post_id",
+            "platform_account_id",
+            unique=True,
+            postgresql_where=text(
+                "status IN ('QUEUED', 'RUNNING', 'RETRYING')"
+            ),
+            sqlite_where=text("status IN ('QUEUED', 'RUNNING', 'RETRYING')"),
+        ),
+    )
 
     post_id: Mapped[uuid.UUID] = mapped_column(
         GUID, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True

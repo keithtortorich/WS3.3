@@ -9,6 +9,7 @@ from app.models.enums import (
     ApprovalStatus,
     AuditAction,
     CampaignStatus,
+    ExecutionNodeRefType,
     MediaType,
     NotificationType,
     OrgRole,
@@ -16,6 +17,8 @@ from app.models.enums import (
     PostStatus,
     PublishJobStatus,
     TaskStatus,
+    WorkflowNodeStatus,
+    WorkflowNodeType,
 )
 from app.models.organization import Organization
 from app.models.user import User, OrganizationMembership
@@ -38,12 +41,15 @@ from app.models.prompt_template import PromptTemplate
 from app.models.agent_template import AgentTemplate
 from app.models.audit_log import AuditLog
 from app.models.notification import Notification
+from app.models.execution_node import ExecutionNode
+from app.models.integration_mount import IntegrationMount
 
 __all__ = [
     "Base",
     "ApprovalStatus",
     "AuditAction",
     "CampaignStatus",
+    "ExecutionNodeRefType",
     "MediaType",
     "NotificationType",
     "OrgRole",
@@ -51,6 +57,8 @@ __all__ = [
     "PostStatus",
     "PublishJobStatus",
     "TaskStatus",
+    "WorkflowNodeStatus",
+    "WorkflowNodeType",
     "Organization",
     "User",
     "OrganizationMembership",
@@ -74,4 +82,6 @@ __all__ = [
     "AgentTemplate",
     "AuditLog",
     "Notification",
+    "ExecutionNode",
+    "IntegrationMount",
 ]

@@ -104,17 +104,11 @@ async def update_post(
     updates = payload.model_dump(exclude_unset=True, exclude={"change_summary"})
     if updates:
         post = await repo.update(post, **updates)
+        # Snapshotting goes through the repository so version-number
+        # allocation is race-safe (see PostVersionRepository's docstring);
+        # a content edit without a version row is not permitted.
         version_repo = PostVersionRepository(db)
-        next_version = await version_repo.get_latest_version_number(post.id) + 1
-        await version_repo.create(
-            PostVersion(
-                post_id=post.id,
-                version_number=next_version,
-                caption=post.caption,
-                hashtags=post.hashtags,
-                change_summary=payload.change_summary or "Content updated.",
-            )
-        )
+        await version_repo.snapshot_post(post, change_summary=payload.change_summary)
     await db.commit()
     await db.refresh(post)
     return post

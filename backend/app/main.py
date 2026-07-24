@@ -21,6 +21,8 @@ from app.routers import (
     calendar,
     campaigns,
     clients,
+    execution_nodes,
+    integrations,
     media,
     notifications,
     posts,
@@ -66,6 +68,8 @@ def create_app() -> FastAPI:
     app.include_router(approvals.router)
     app.include_router(notifications.router)
     app.include_router(agent_templates.router)
+    app.include_router(execution_nodes.router)
+    app.include_router(integrations.router)
 
     @app.get("/healthz", tags=["health"])
     async def health_check() -> dict:

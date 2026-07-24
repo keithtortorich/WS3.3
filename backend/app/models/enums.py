@@ -106,3 +106,42 @@ class NotificationType(str, enum.Enum):
     COMMENT_ADDED = "comment_added"
     TASK_ASSIGNED = "task_assigned"
     SYSTEM = "system"
+
+
+class WorkflowNodeType(str, enum.Enum):
+    """Canonical execution node kinds.
+
+    Mirrors the SQL ``execution_nodes.node_type`` constraint so Python-side
+    checks can validate before persisting workflow graph nodes.
+    """
+
+    INTAKE = "intake"
+    CAMPAIGN = "campaign"
+    POST = "post"
+    PUBLISH_JOB = "publish_job"
+    APPROVAL = "approval"
+    INTEGRATION_EVENT = "integration_event"
+
+
+class WorkflowNodeStatus(str, enum.Enum):
+    """Status vocabulary for ``execution_nodes``.
+
+    Mirrors the SQL ``execution_nodes.status`` constraint.
+    """
+
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+class ExecutionNodeRefType(str, enum.Enum):
+    """Domain entity types that an execution node can reference."""
+
+    CAMPAIGN = "campaign"
+    POST = "post"
+    SCHEDULE = "schedule"
+    PUBLISH_JOB = "publish_job"
+    APPROVAL = "approval"
+    AUDIT_LOG = "audit_log"

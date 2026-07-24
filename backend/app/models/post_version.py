@@ -8,10 +8,11 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db_types import GUID, StringArrayCompat
+from app.core.exceptions import ConflictError
 from app.models.base import Base, TimestampMixin, UUIDPkMixin
 
 if TYPE_CHECKING:
@@ -43,3 +44,17 @@ class PostVersion(UUIDPkMixin, TimestampMixin, Base):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<PostVersion post={self.post_id} v={self.version_number}>"
+
+
+@event.listens_for(PostVersion, "before_update")
+def _forbid_post_version_mutation(mapper, connection, target: PostVersion) -> None:
+    """Architecture invariant #4: version history is immutable.
+
+    A snapshot that can be edited after the fact is not history. Editing a
+    Post must INSERT a new ``PostVersion``; UPDATEs against an existing row
+    are rejected at flush time rather than trusted to code review.
+    """
+    raise ConflictError(
+        "PostVersion rows are immutable. Record a new version instead of "
+        f"mutating version {target.version_number} of post {target.post_id}."
+    )

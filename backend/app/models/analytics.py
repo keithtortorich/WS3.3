@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db_types import GUID, JSONBCompat
@@ -22,6 +22,19 @@ class Analytics(UUIDPkMixin, OrgScopedMixin, TimestampMixin, Base):
     """
 
     __tablename__ = "analytics"
+
+    # A snapshot is a historical observation of one post at one instant, so the
+    # natural key must be unique. Without this the repository's duplicate check
+    # is a read-then-write race: two concurrent pollers can both pass the
+    # existence check and insert twins, which then double-count in every rollup.
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "post_id",
+            "captured_at",
+            name="uq_analytics_org_post_captured",
+        ),
+    )
 
     post_id: Mapped[uuid.UUID] = mapped_column(
         GUID, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False, index=True

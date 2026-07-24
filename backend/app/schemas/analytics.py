@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
-from typing import Optional
+from datetime import date, datetime
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -45,3 +45,36 @@ class CampaignAnalyticsSummary(BaseModel):
     total_shares: int
     total_clicks: int
     average_engagement_rate: Optional[float]
+
+
+class WeeklyKPIBucket(BaseModel):
+    """One week's aggregated KPIs for a campaign.
+
+    ``week_start`` is the Monday of the ISO week the snapshots fall in
+    (``docs/sql/smm_gtm_bridge.sql`` 4b uses ``date_trunc('week', ...)``,
+    which is Monday-based).
+    """
+
+    week_start: date
+    post_count: int
+    impressions: int
+    likes: int
+    comments: int
+    shares: int
+    clicks: int
+    engagement_rate: Optional[float] = Field(
+        default=None,
+        description=(
+            "(likes + comments + shares) / impressions for the bucket; "
+            "null when the bucket recorded no impressions."
+        ),
+    )
+
+
+class CampaignWeeklyRollup(BaseModel):
+    """Response envelope for GET /analytics/campaigns/{id}/weekly."""
+
+    campaign_id: uuid.UUID
+    start: Optional[datetime] = None
+    end: Optional[datetime] = None
+    weeks: List[WeeklyKPIBucket]

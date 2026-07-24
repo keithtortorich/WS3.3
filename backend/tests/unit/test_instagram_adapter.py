@@ -4,7 +4,14 @@ from __future__ import annotations
 import httpx
 import pytest
 
-from app.social.platforms.instagram import InstagramAdapter, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES
+from app.social.platforms.instagram import (
+    INSTAGRAM_GRAPH_VERSION,
+    INSTAGRAM_LONG_TOKEN_URL,
+    INSTAGRAM_REFRESH_TOKEN_URL,
+    InstagramAdapter,
+    MAX_IMAGE_BYTES,
+    MAX_VIDEO_BYTES,
+)
 from app.social.schemas import (
     DeleteContentRequest,
     MediaValidationRequest,
@@ -198,3 +205,60 @@ async def test_schedule_returns_synthetic_schedule_id():
     assert response.platform == "instagram"
 
 
+
+
+# ---------------------------------------------------------------------------
+# Instagram Login flow contract
+# ---------------------------------------------------------------------------
+# Added 2026-07-24. The adapter previously mixed Instagram Login's authorize URL with
+# Facebook Login's scopes, host, and token grant type — a combination that fails at
+# authorization. The whole suite passed before AND after that was corrected, because
+# nothing asserted any of these values. These tests exist so a regression back to the
+# Facebook Login flow fails loudly instead of silently.
+
+
+def test_authorization_url_requests_instagram_login_scopes():
+    """Facebook Login's unprefixed scope names were deprecated for this flow 2025-01-27."""
+    url = InstagramAdapter().build_authorization_url(state="s")
+    assert "instagram_business_basic" in url
+    assert "instagram_business_content_publish" in url
+    # The Facebook Login names must not appear, not even as a substring of the new ones:
+    # 'instagram_basic' is not a substring of 'instagram_business_basic'.
+    assert "instagram_basic" not in url
+    assert "instagram_content_publish" not in url
+
+
+def test_api_base_is_instagram_login_host_and_supported_version():
+    """graph.facebook.com belongs to the Facebook Login flow, which needs a linked Page."""
+    adapter = InstagramAdapter()
+    assert adapter.api_base.startswith("https://graph.instagram.com/")
+    assert "graph.facebook.com" not in adapter.api_base
+    # Meta supports a Graph API version for roughly two years; v20.0 was past that.
+    assert adapter.api_base.endswith(INSTAGRAM_GRAPH_VERSION)
+    assert INSTAGRAM_GRAPH_VERSION != "v20.0"
+
+
+def test_long_lived_token_endpoints_are_instagram_login():
+    assert INSTAGRAM_LONG_TOKEN_URL == "https://graph.instagram.com/access_token"
+    assert INSTAGRAM_REFRESH_TOKEN_URL == "https://graph.instagram.com/refresh_access_token"
+
+
+@pytest.mark.asyncio
+async def test_long_lived_exchange_uses_ig_exchange_token_grant():
+    """Instagram Login uses ig_exchange_token + access_token, not fb_exchange_token."""
+    seen: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        seen["params"] = dict(request.url.params)
+        return httpx.Response(200, json={"access_token": "long-lived-token"})
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as client:
+        token = await InstagramAdapter()._exchange_for_long_lived_token(client, "short-token")
+
+    assert token == "long-lived-token"
+    assert seen["params"]["grant_type"] == "ig_exchange_token"
+    assert seen["params"]["access_token"] == "short-token"
+    assert "fb_exchange_token" not in seen["params"]
+    assert seen["url"].startswith("https://graph.instagram.com/access_token")

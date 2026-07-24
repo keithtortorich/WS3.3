@@ -6,15 +6,34 @@ metrics from the Graph API insights/media endpoints, and documented media
 constraints (validate_media). All endpoints mirror Instagram's documented
 API shapes for the Instagram Graph API as of this implementation.
 
-Instagram API references used:
-  - OAuth2:          GET  https://www.instagram.com/oauth/authorize
-                     POST https://api.instagram.com/oauth/access_token
-  - Long-lived token:POST https://graph.facebook.com/v20.0/access_token
-  - Create media:    POST https://graph.facebook.com/v20.0/{ig-user-id}/media
-  - Publish media:   POST https://graph.facebook.com/v20.0/{ig-user-id}/media_publish
-  - Delete media:    DELETE https://graph.facebook.com/v20.0/{ig-media-id}
-  - Fetch media:     GET  https://graph.facebook.com/v20.0/{ig-media-id}
-  - Insights:        GET  https://graph.facebook.com/v20.0/{ig-media-id}/insights
+This targets **Instagram API with Instagram Login**, not Facebook Login. The two are
+distinct and cannot be mixed: Instagram Login uses the ``graph.instagram.com`` host and
+``instagram_business_*`` scopes; Facebook Login uses ``graph.facebook.com``,
+``instagram_basic``/``instagram_content_publish``, and additionally requires a Facebook
+Page linked to the Instagram professional account. Instagram Login requires no linked
+Page, which is why it is the flow chosen here.
+
+Corrected 2026-07-24 against Meta's live documentation. The previous implementation mixed
+the two flows — Instagram Login's authorize URL with Facebook Login's scope names and
+host — which fails at authorization. It was also pinned to Graph API v20.0; Meta supports
+a version for roughly two years and the current version is v25.0.
+
+Instagram API references used (verified 2026-07-24):
+  - OAuth2:           GET  https://www.instagram.com/oauth/authorize
+                      POST https://api.instagram.com/oauth/access_token
+                           (grant_type=authorization_code)
+  - Long-lived token: GET  https://graph.instagram.com/access_token
+                           (grant_type=ig_exchange_token)
+  - Refresh token:    GET  https://graph.instagram.com/refresh_access_token
+                           (grant_type=ig_refresh_token)
+  - Create media:     POST https://graph.instagram.com/v25.0/{ig-user-id}/media
+  - Publish media:    POST https://graph.instagram.com/v25.0/{ig-user-id}/media_publish
+  - Delete media:     DELETE https://graph.instagram.com/v25.0/{ig-media-id}
+  - Fetch media:      GET  https://graph.instagram.com/v25.0/{ig-media-id}
+  - Insights:         GET  https://graph.instagram.com/v25.0/{ig-media-id}/insights
+
+[Unverified] against a live Instagram account — no real credential has been exercised.
+Endpoint shapes come from Meta's documentation, not from an observed successful publish.
 """
 from __future__ import annotations
 
@@ -42,8 +61,15 @@ from app.social.schemas import (
 
 INSTAGRAM_AUTH_URL = "https://www.instagram.com/oauth/authorize"
 INSTAGRAM_TOKEN_URL = "https://api.instagram.com/oauth/access_token"
-INSTAGRAM_LONG_TOKEN_URL = "https://graph.facebook.com/v20.0/access_token"
-INSTAGRAM_API_BASE = "https://graph.facebook.com/v20.0"
+INSTAGRAM_LONG_TOKEN_URL = "https://graph.instagram.com/access_token"
+INSTAGRAM_REFRESH_TOKEN_URL = "https://graph.instagram.com/refresh_access_token"
+INSTAGRAM_GRAPH_VERSION = "v25.0"
+INSTAGRAM_API_BASE = f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}"
+
+#: Instagram Login scopes. The unprefixed ``instagram_basic`` /
+#: ``instagram_content_publish`` names belong to Facebook Login and were deprecated for
+#: this flow on 2025-01-27 — using them here fails at authorization.
+INSTAGRAM_DEFAULT_SCOPES = ["instagram_business_basic", "instagram_business_content_publish"]
 
 # Documented Instagram media constraints.
 # Source: Meta for Developers / Instagram Graph API documentation.
@@ -70,13 +96,13 @@ class InstagramAdapter(SocialPlatformAdapter):
         self.client_secret = settings.INSTAGRAM_APP_SECRET
         self.redirect_uri = settings.INSTAGRAM_REDIRECT_URI
         self.api_base = INSTAGRAM_API_BASE
-        self.fb_graph_version = "v20.0"
+        self.fb_graph_version = INSTAGRAM_GRAPH_VERSION
 
     # --- OAuth2 ---------------------------------------------------------
 
     def build_authorization_url(self, state: str, scopes: list[str] | None = None) -> str:
         """Build the Instagram OAuth2 authorization URL for the connect flow."""
-        scopes = scopes or ["instagram_basic", "instagram_content_publish"]
+        scopes = scopes or list(INSTAGRAM_DEFAULT_SCOPES)
         params = {
             "response_type": "code",
             "client_id": self.client_id,
@@ -123,15 +149,20 @@ class InstagramAdapter(SocialPlatformAdapter):
         )
 
     async def _exchange_for_long_lived_token(self, client: httpx.AsyncClient, short_token: str) -> str:
-        """Exchange the short-lived code token for a long-lived token."""
+        """Exchange the short-lived code token for a long-lived (60-day) token.
+
+        Instagram Login uses ``grant_type=ig_exchange_token`` with the short-lived token
+        passed as ``access_token``. The Facebook Login equivalent
+        (``fb_exchange_token`` + ``client_id`` + ``fb_exchange_token`` param) is a
+        different flow against a different host and is rejected here.
+        """
         try:
             response = await client.get(
                 INSTAGRAM_LONG_TOKEN_URL,
                 params={
-                    "grant_type": "fb_exchange_token",
-                    "client_id": self.client_id,
+                    "grant_type": "ig_exchange_token",
                     "client_secret": self.client_secret,
-                    "fb_exchange_token": short_token,
+                    "access_token": short_token,
                 },
             )
             response.raise_for_status()

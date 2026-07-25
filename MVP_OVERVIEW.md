@@ -1,31 +1,31 @@
-# WebStaffr — MVP Overview
+# WebStaffr : MVP Overview
 
 ## What it is
 
 WebStaffr is an AI workforce platform for local service businesses. The product sits on three web properties:
 
-1. **WebStaffr.com** — main product site: positioning, intake, pricing, signup.
-2. **Trade example sites** — example customer sites embedded within WebStaffr's domain, showing what a generated site looks like for HVAC, plumbing, electrical, etc.
-3. **Investor forward site** — standalone investor-facing site for fundraising and pitch material.
+1. **WebStaffr.com** : main product site: positioning, intake, pricing, signup.
+2. **Trade example sites** : example customer sites embedded within WebStaffr's domain, showing what a generated site looks like for HVAC, plumbing, electrical, etc.
+3. **Investor forward site** : standalone investor-facing site for fundraising and pitch material.
 
 The backend and Lovable-generated customer site are already live under the canonical Lovable "Site Weaver" project. This docs layer now reflects the current product direction.
 
 ## The three-site structure
 
-### Site 1 — WebStaffr.com
+### Site 1 : WebStaffr.com
 - Business-facing main site
 - Product positioning, workforce plan descriptions, intake entry point
 - Angel widget embedded for live demos / questions
 - Links to trade examples
 
-### Site 2 — Trade example sites
+### Site 2 : Trade example sites
 - Real example sites for each trade vertical, hosted within WebStaffr's domain
 - Used as proof points during sales conversations
 - Populated from real `IntakeSubmission` data or curated demo data
 - AI chat concierge embedded on each example
 - No fabricate-fill policy: only real or explicitly labeled demo data
 
-### Site 3 — Investor forward site
+### Site 3 : Investor forward site
 - Standalone, separate identity from the commercial site
 - Investor-grade material: updated projections, unit economics, product overview, team, risks, ask
 - Not confused with the customer-facing site
@@ -49,7 +49,7 @@ The backend and Lovable-generated customer site are already live under the canon
 
 ## Where the real state lives
 
-- `TASKS.md` — live status, what is done vs open, updated every session
-- `CLAUDE.md` — full decision history, dated and append-only
-- `CREDENTIALS.md` — env vars and why (never values)
-- `STRATEGY.md` — pricing, positioning, and beachhead strategy
+- `TASKS.md` : live status, what is done vs open, updated every session
+- `CLAUDE.md` : full decision history, dated and append-only
+- `CREDENTIALS.md` : env vars and why (never values)
+- `STRATEGY.md` : pricing, positioning, and beachhead strategy

@@ -1,5 +1,5 @@
 # WebStaffr: Principled Development and Investment
-### Consolidated Investor Proposal, 2026-07-13. Supersedes prior investor-deck drafts (see Section 12).
+### Consolidated Investor Proposal, 2026-07-13 (updated 2026-07-24 : ServiceTitan and attribution/call-tracking status corrected forward, churn reconciled to 8% planning base per STRATEGY.md). Supersedes prior investor-deck drafts (see Section 12).
 
 Prepared by consolidating and verifying against live project state as of July 13, 2026. Labels: [Unverified] = not independently confirmed this session; [Inference] = reasoned conclusion, not a direct source fact.
 
@@ -29,8 +29,11 @@ Unlike prior drafts of this pitch, this section is checked against the running s
 - Source code: github.com/keithtortorich/WebStaffr3.0, public build history, not a black box.
 
 **Built, integration-complete, not yet live-tested:**
-- ServiceTitan integration (`webstaffr/integrations/servicetitan/`) exists as a tested Python package with OAuth2 client, mock client, sync runner, and router endpoint harness. It is built, not a placeholder.
+- ServiceTitan integration (`webstaffr/integrations/servicetitan/`) exists as a tested Python package with OAuth2 client, mock client, sync runner, and router endpoint harness. It is built, not a placeholder. Feature-flagged; not yet activated against a live contractor account.
 - Telephone voice via Retell AI is also integration-complete: webhook and function-calling code is built and unit-tested (21 tests), but has never been exercised against a real inbound phone call.
+
+**Built and live in production (added since the prior version of this proposal):**
+- An attribution and call-tracking system (`webstaffr/attribution.py`, `attribution_router.py`) is built, tested (20 dedicated tests, part of a 169/169 passing suite), and wired into both the intake flow and the voice call lifecycle. Every tenant gets a tracking identifier; every call and booking event is logged against it, producing real per-tenant metrics (calls received, appointments booked, an explicitly-labeled placeholder estimated dollar value). This is the infrastructure a future "pays for itself" guarantee will be built on, once real tenant volume exists to back it. The tracking identifier is logical, not yet a real phone number; provisioning an actual line per tenant is the remaining step.
 
 **Built, not yet publicly reachable:**
 - The customer-facing generated website (Lovable "Site Weaver," the canonical frontend) renders real tenant data correctly when accessed directly, confirmed this session, but the project is currently private and unpublished. There is no plain public URL yet. Publishing it is a short, low-risk step, not unfinished engineering.
@@ -70,15 +73,17 @@ Beachhead: HVAC contractors, Phoenix AZ (ICP: 3 to 15 employees, $500K to $3M re
 The handoff chain (the actual product, not just a feature list):
 Lead lands on website. Service Advisor pre-qualifies. 24/7 Receptionist books on the spot. Lead Coordinator catches anyone who fell through. Reputation Manager closes the loop after the job. Website Operations Manager keeps it running.
 
-### Business Manager, Monthly Workforce Investment $997
+### Business Manager, Monthly Workforce Investment $2,497, plus the contractor's own ad spend
 "Grow past what your current customers can give you." Adds a Sales Consultant, Marketing Coordinator, and Growth Manager on top of the full Office Staff roster.
 
-These three price points are locked, founder-confirmed figures, consistent across this repo's planning history, used as-is here rather than any of the conflicting figures found in older drafts (see Section 12).
+The Marketing Coordinator role runs paid social and search advertising (Meta at minimum, plus any other platform the contractor has a presence on) and optimizes toward cost per booked job, not vanity metrics. This is ongoing, multi-platform ad-account management, the most operationally complex role in the tier. The $2,497 fee is WebStaffr's managed-service price only; ad spend is paid by the contractor directly to each platform, never included in or marked up by WebStaffr.
 
-ServiceTitan, Jobber, Housecall Pro, and similar field-service or practice-management platforms are not add-ons — they are the baseline environment WebStaffr is built to operate inside. Every plan works alongside these tools from day one; being on one of them is a qualification signal, not an upgrade trigger. Contractors already using these platforms are materially warmer leads for Layer 1 acquisition because they have already accepted SaaS workflow costs and proven they operate at a size where systematization matters.
+These price points are locked, founder-confirmed figures, current as of the WebStaffr Governance Manual (2026-07-18), which supersedes the $997 Business Manager figure this section previously carried forward from older drafts (see Section 12).
+
+ServiceTitan, Jobber, Housecall Pro, and similar field-service or practice-management platforms are not add-ons: they are the baseline environment WebStaffr is built to operate inside. Every plan works alongside these tools from day one; being on one of them is a qualification signal, not an upgrade trigger. Contractors already using these platforms are materially warmer leads for Layer 1 acquisition because they have already accepted SaaS workflow costs and proven they operate at a size where systematization matters.
 
 **Layer 1 sourcing through field-service software: [Unverified, conservative]**
-- Realistic channel: listings or partner exposure inside ServiceTitan/Jobber ecosystems, public outreach to operators who already advertise those platforms, and co-marketing through vertical communities—not internal customer data which is not publicly available.
+- Realistic channel: listings or partner exposure inside ServiceTitan/Jobber ecosystems, public outreach to operators who already advertise those platforms, and co-marketing through vertical communities: not internal customer data which is not publicly available.
 - Effect on assumptions only: if the first 30–50 trials skew toward ServiceTitan/Jobber users, effective CAC should be modeled closer to the lower end of earlier founder-led outreach range, and onboarding time drops because the tooling environment is already familiar. This is not modeled in the base-case projections below; it would be a favorable variance, not a new budget line.
 
 ---
@@ -88,28 +93,28 @@ ServiceTitan, Jobber, Housecall Pro, and similar field-service or practice-manag
 | Metric | Value |
 |---|---|
 | Monthly Revenue | $497 |
-| Delivery Cost | $65 |
-| Gross Profit | $432 |
-| Gross Margin | 87% |
-| CAC | $100–$200 |
-| Monthly Churn | 6% |
-| Customer Lifetime | 16.7 months |
-| LTV | $7,200 |
-| LTV:CAC | 36x–72x |
-| Payback | Under 1 month |
+| Delivery Cost | $70 |
+| Gross Profit | $427 |
+| Gross Margin | 86% |
+| CAC | $100–$200 founder-led organic |
+| Monthly Churn | 8% (planning base) |
+| Customer Lifetime | 12.5 months |
+| LTV | $5,400 |
+| LTV:CAC | ~36x |
+| Payback | Under 30 days |
 
-**[Unverified] flag, carried forward honestly:** other source documents in this project's history quote a different churn range (8% to 16%) for the same business. No real customer cohort exists yet to settle which is closer to reality; these are modeling assumptions, not measured outcomes. **[Inference]** The CAC range above reflects the free-website-lead-hook, founder-led, organic channel this business is actually running today, not a paid-acquisition channel — a very high LTV:CAC like this is a sign that acquisition is currently cheap because it's founder-led and referral-driven, not a steady-state SaaS benchmark. Treat it as unproven past the first 50 free builds; a shift to paid acquisition would raise CAC materially.
+**Reconciled, 2026-07-24:** other source documents in this project's history quoted a different churn range (5% to 16%) for the same business at different times. This has since been reconciled per `STRATEGY.md` Section 4: 8% monthly is the conservative planning base used everywhere until three or more months of real retention data exist. 5 to 6% is a target to earn, not a base case, and should not be presented as the planning assumption in investor materials going forward. **[Inference]** The CAC range above reflects the free-website-lead-hook, founder-led, organic channel this business is actually running today, not a paid-acquisition channel : a very high LTV:CAC like this is a sign that acquisition is currently cheap because it's founder-led and referral-driven, not a steady-state SaaS benchmark. Treat it as unproven past the first 50 free builds; a shift to paid acquisition would raise CAC materially.
 
 ## 7. Financial Projections, Conservative Case
 
-[Inference — planning estimate, not measured] Model assumptions: 100 free 30-day Office Staff trials in month 1, 50/month after, 10% conversion to paid, 6% monthly churn, $150 CAC per paid customer (midpoint of the $100–$200 range above), $3,000/month fixed costs, $25,000 starting cash.
+[Inference : planning estimate, not measured] Model assumptions: 100 free 30-day Office Staff trials in month 1, 50/month after, 10% conversion to paid, 8% monthly churn (planning base), $150 CAC per paid customer (midpoint of the $100–$200 range above), $3,000/month fixed costs, $25,000 starting cash.
 
 Year 1 (Phoenix, HVAC): cash-positive by month 3. Year-end: ~44 customers, ~$261K ARR, ~$115,325 cumulative cash.
 
 Year 2 (Phoenix plus Tampa, Tampa launching month 13 on the same ramp shape): ~108 customers, ~$646K ARR, ~$489K cumulative cash.
 
 ### The one question investors will ask: "What if 10% conversion is actually 5%?"
-Then Year 1 lands at roughly 22 customers instead of 44, roughly $131K ARR, and roughly $52,163 cumulative cash — still cash-positive, as long as CAC holds at $100–$200. If the free-website funnel underperforms and paid acquisition becomes necessary, this downside case gets worse than shown here. Scaling of paid acquisition is gated on the first 50 free 30-day Office Staff trials' real conversion rate before committing further spend, rather than assuming the base case holds.
+Then Year 1 lands at roughly 22 customers instead of 44, roughly $131K ARR, and roughly $52,163 cumulative cash : still cash-positive, as long as CAC holds at $100–$200. If the free-website funnel underperforms and paid acquisition becomes necessary, this downside case gets worse than shown here. Scaling of paid acquisition is gated on the first 50 free 30-day Office Staff trials' real conversion rate before committing further spend, rather than assuming the base case holds.
 
 ---
 
@@ -168,7 +173,7 @@ K. Michael Tortorich, MD. Founder. Confirmed throughout this project's history.
 |---|---|
 | Free-to-paid conversion below 10% | Gate all paid-acquisition scaling on the first 50 free 30-day Office Staff trials' real conversion rate |
 | TCPA exposure (calling/texting leads) | Email-first, consent-based, DNC scrub, 10DLC registration |
-| Churn above 6-7% | Day 1/7/30 onboarding touches; track "activation" (first 3 calls answered) as a leading indicator |
+| Churn above 8% planning base | Day 1/7/30 onboarding touches; track "activation" (first 3 calls answered) as a leading indicator |
 | Competition from point solutions | Compete on the full handoff chain and operational playbook, not feature-for-feature |
 | Voice integration unverified in production | Retell code is built and tested but not yet phone-tested; flagged, not hidden, in Section 2 |
 

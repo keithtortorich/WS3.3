@@ -1,0 +1,145 @@
+{
+  "evaluation_framework": {
+    "description": "Quantitative and qualitative assertions for validating the brand-governance-unifier skill",
+    "test_cases": [
+      {
+        "test_id": 1,
+        "test_name": "webstaffr-repo-docs-consolidation",
+        "assertions": [
+          {
+            "id": "coherence-no-contradictions",
+            "type": "qualitative",
+            "description": "No contradictions between documents on core principles, communication style, or brand rules",
+            "scoring": "Pass if all documents align on (a) complexity principle, (b) outcome-focused positioning, (c) executive vs. commercial voice separation, (d) no em-dashes rule"
+          },
+          {
+            "id": "philosophy-consistency",
+            "type": "qualitative",
+            "description": "Philosophy consistently reinforced across all documents",
+            "scoring": "Pass if 'we absorb complexity so customers experience clarity' is evident in every doc's structure and examples"
+          },
+          {
+            "id": "communication-style-separation",
+            "type": "qualitative",
+            "description": "Clear distinction between Executive (internal/leadership) and Commercial (customer-facing) voice",
+            "scoring": "Pass if each document explicitly labels its intended audience and uses appropriate vocabulary/tone (elevated vs. Grade 8)"
+          },
+          {
+            "id": "redundancy-elimination",
+            "type": "quantitative",
+            "description": "Concepts are not repeated across documents without cross-reference",
+            "scoring": "Pass if no concept appears verbatim in multiple docs without explicit cross-reference. Measure: scan for duplicate paragraphs (allow <5% word-for-word overlap after consolidation)"
+          },
+          {
+            "id": "clarity-improvement",
+            "type": "qualitative",
+            "description": "Writing is clearer and more authoritative than originals",
+            "scoring": "Pass if (a) sentences are shorter on average, (b) jargon is explained or removed, (c) tone is confident and restrained (not defensive or apologetic)"
+          },
+          {
+            "id": "structure-organization",
+            "type": "qualitative",
+            "description": "Each document has a clear, distinct purpose and role in the system",
+            "scoring": "Pass if introduction to each document clearly states its role and how it relates to other docs. Measure: each doc must have <200-word role statement that distinguishes it from others"
+          },
+          {
+            "id": "no-legacy-references",
+            "type": "quantitative",
+            "description": "No references to old iterations, previous decisions, or historical paths",
+            "scoring": "Pass if zero mentions of 'previously,' 'historically,' 'as we used to,' 'old approach,' or references to WebStaffr-clean. Measure: grep for legacy-reference keywords"
+          },
+          {
+            "id": "brand-rule-compliance",
+            "type": "quantitative",
+            "description": "WebStaffr-specific brand rules are documented and followed (Garamond, colors, no em dashes)",
+            "scoring": "Pass if (a) brand rules section exists, (b) no em dashes found anywhere, (c) WebStaffr name styling documented, (d) color codes (#1f4d78 or split option) stated"
+          },
+          {
+            "id": "vocabulary-appropriateness",
+            "type": "quantitative",
+            "description": "Commercial voice documents are Grade 8 reading level or below",
+            "scoring": "Measure via automated readability (Flesch-Kincaid Grade Level). Pass if commercial docs avg <8.0, executive docs avg 10.0-14.0"
+          },
+          {
+            "id": "reconciliation-memo",
+            "type": "qualitative",
+            "description": "A clear reconciliation memo explains consolidation decisions",
+            "scoring": "Pass if memo includes (a) which docs were consolidated/merged, (b) which kept separate and why, (c) contradictions found and how resolved, (d) new governance roles defined"
+          }
+        ]
+      },
+      {
+        "test_id": 2,
+        "test_name": "home-service-brand-consolidation",
+        "assertions": [
+          {
+            "id": "contradiction-resolution",
+            "type": "qualitative",
+            "description": "'Cutting-edge AI' vs. 'we fix your furnace' contradiction is resolved into coherent positioning",
+            "scoring": "Pass if final copy positions company as (a) reliable outcome-focused partner, (b) reduces emphasis on AI/technology, (c) emphasizes customer benefit (comfort, peace of mind, speed)"
+          },
+          {
+            "id": "tone-consistency",
+            "type": "qualitative",
+            "description": "Tone feels premium but tradesperson-friendly throughout",
+            "scoring": "Pass if (a) no condescension toward customer, (b) simple language (Grade 8), (c) confidence without arrogance, (d) professionalism balanced with approachability"
+          },
+          {
+            "id": "document-role-clarity",
+            "type": "qualitative",
+            "description": "Each consolidated document has a distinct, non-overlapping role",
+            "scoring": "Pass if visual doc covers design only, editorial covers voice/examples only, sales covers positioning only, with minimal cross-document repetition"
+          }
+        ]
+      },
+      {
+        "test_id": 3,
+        "test_name": "saas-voice-audit-and-fix",
+        "assertions": [
+          {
+            "id": "style-violations-identified",
+            "type": "quantitative",
+            "description": "Audit correctly identifies style guide violations in input docs",
+            "scoring": "Pass if audit finds: (a) em-dashes, (b) tone inconsistency (casual on website vs. enterprise in sales), (c) vocabulary mismatch (high in investor pitch, casual elsewhere), (d) brand rule violations"
+          },
+          {
+            "id": "visual-identity-documented",
+            "type": "qualitative",
+            "description": "Logo treatment and visual rules are clearly documented and enforced",
+            "scoring": "Pass if visual governance includes (a) Garamond specifications, (b) size hierarchy, (c) color codes with hex values, (d) usage rules (when to use which variant)"
+          },
+          {
+            "id": "two-styles-enforced",
+            "type": "qualitative",
+            "description": "Executive and Commercial voice are clearly separated and examples provided",
+            "scoring": "Pass if guidance includes (a) example sentences in each style, (b) vocabulary lists (elevated vs. simple), (c) scenario guides (when to use which), (d) common pitfalls (don't do this)"
+          }
+        ]
+      },
+      {
+        "test_id": 4,
+        "test_name": "new-copy-against-existing-standards",
+        "assertions": [
+          {
+            "id": "violations-correctly-identified",
+            "type": "quantitative",
+            "description": "Audit identifies all style guide violations in the sample copy",
+            "scoring": "Pass if audit flags: (a) elevated vocabulary ('leverages paradigms'), (b) AI-focus contradiction, (c) 'not just' pattern violation, (d) em-dash use if present"
+          },
+          {
+            "id": "rewrite-matches-standards",
+            "type": "qualitative",
+            "description": "Rewritten copy adheres to governance (Grade 8, outcome-focused, no em dashes)",
+            "scoring": "Pass if rewrite is (a) simple and clear, (b) focuses on customer outcome not technology, (c) uses short sentences, (d) matches example tone from governance doc"
+          },
+          {
+            "id": "audit-report-clarity",
+            "type": "qualitative",
+            "description": "Audit report clearly explains what was wrong and why",
+            "scoring": "Pass if report includes (a) specific quote from original, (b) explanation of violation, (c) reference to governance rule, (d) suggested fix with reasoning"
+          }
+        ]
+      }
+    ]
+  }
+}

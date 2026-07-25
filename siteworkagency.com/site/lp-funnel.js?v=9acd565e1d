@@ -1,0 +1,163 @@
+/* SiteWork — Miami plumber landing page interactions.
+   Loaded only on /lp/miami-plumbers. Three guarded features:
+   1) value-anchor count-up, 2) micro-commitment lead form,
+   3) Google Business finder (tap-to-find via /api/business-search, human-confirmed).
+   All guarded on element presence so it's inert anywhere else. */
+(function () {
+  "use strict";
+
+  /* ---- 1. value-anchor count-up ---- */
+  var animated = false;
+  function countUp(el) {
+    var target = +el.getAttribute("data-count"),
+        pre = el.getAttribute("data-prefix") || "",
+        t0 = null, dur = 1100;
+    if (!target) { el.textContent = pre + "0"; return; }
+    function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = pre + Math.round(target * e).toLocaleString("en-US");
+      if (p !== 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var anchor = document.querySelector(".lpm-anchor");
+  if (anchor && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting && !animated) {
+          animated = true;
+          document.querySelectorAll(".lpm-anum").forEach(countUp);
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.4 }).observe(anchor);
+  } else if (anchor) {
+    document.querySelectorAll(".lpm-anum").forEach(countUp);
+  }
+
+  /* ---- 2 + 3. micro-form + Google Business finder ---- */
+  var form = document.getElementById("lpm-form");
+  if (!form) return;
+
+  // Optional region/trade bias for the Google-Business search, set per landing page
+  // via data-search-suffix on the form (e.g. " Florida" for a metro page, " garage
+  // door repair" for a national trade page). Empty = search the raw business name.
+  var searchSuffix = form.getAttribute("data-search-suffix") || "";
+
+  var fields = document.getElementById("lpm-fields"),
+      hasInput = document.getElementById("lpm-has"),
+      thanks = document.getElementById("lpm-thanks"),
+      biz = document.getElementById("lpm-biz"),
+      results = document.getElementById("lpm-results"),
+      matched = document.getElementById("lpm-matched"),
+      findBtn = document.getElementById("lpm-find");
+
+  // binary micro-commitment -> reveal the rest of the form
+  form.querySelectorAll(".lpm-bbtn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      form.querySelectorAll(".lpm-bbtn").forEach(function (x) { x.classList.remove("is-on"); });
+      b.classList.add("is-on");
+      hasInput.value = b.getAttribute("data-has");
+      fields.classList.add("is-open");
+      if (biz) biz.focus();
+    });
+  });
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[<>&"]/g, function (c) {
+      return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
+    });
+  }
+  function setEnrichment(p) {
+    document.getElementById("lpm-gpid").value = p.place_id || "";
+    document.getElementById("lpm-grating").value = (p.rating == null ? "" : p.rating);
+    document.getElementById("lpm-greviews").value = (p.reviews == null ? "" : p.reviews);
+    document.getElementById("lpm-gaddr").value = p.address || "";
+  }
+
+  function showMatched(p) {
+    if (p.name) biz.value = p.name;
+    setEnrichment(p);
+    results.hidden = true; results.innerHTML = "";
+    var stars = (p.rating != null) ? (p.rating).toFixed(1) + "★" : "";
+    var rv = (p.reviews != null) ? " · " + p.reviews + " reviews" : "";
+    matched.innerHTML =
+      '<span class="lpm-ok">✓</span><span>Found you on Google ' +
+      (stars ? "<b>" + esc(stars) + "</b>" + esc(rv) : "") + "</span>" +
+      '<button type="button" class="lpm-clear" id="lpm-clear">change</button>';
+    matched.hidden = false;
+    var clr = document.getElementById("lpm-clear");
+    if (clr) clr.addEventListener("click", function () {
+      matched.hidden = true; setEnrichment({}); biz.focus();
+    });
+  }
+
+  var searching = false;
+  function runFind() {
+    var q = (biz.value || "").trim();
+    if (q.length < 3 || searching) return;
+    searching = true;
+    if (findBtn) { findBtn.disabled = true; findBtn.textContent = "Searching…"; }
+    fetch("/api/business-search?q=" + encodeURIComponent(q + searchSuffix))
+      .then(function (r) { return r.json(); })
+      .catch(function () { return { results: [] }; })
+      .then(function (data) {
+        searching = false;
+        if (findBtn) { findBtn.disabled = false; findBtn.textContent = "Find on Google"; }
+        var list = (data && data.results) || [];
+        if (!list.length) {
+          results.innerHTML = '<div class="lpm-noresult">No Google match yet — no problem, your typed name works fine.</div>';
+          results.hidden = false; return;
+        }
+        results.innerHTML = list.slice(0, 4).map(function (p, i) {
+          var stars = (p.rating != null) ? (p.rating).toFixed(1) + "★" : "";
+          var rv = (p.reviews != null) ? " (" + p.reviews + ")" : "";
+          return '<button type="button" class="lpm-result" data-i="' + i + '">' +
+            '<span class="lpm-rname">' + esc(p.name) + "</span>" +
+            '<span class="lpm-rmeta">' + (stars ? esc(stars + rv) + " · " : "") + esc(p.address || "") +
+            "</span></button>";
+        }).join("") +
+          '<button type="button" class="lpm-result lpm-none" data-none="1">None of these / not listed yet</button>';
+        results.hidden = false;
+        results.querySelectorAll(".lpm-result").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            if (btn.getAttribute("data-none")) { results.hidden = true; setEnrichment({}); biz.focus(); return; }
+            showMatched(list[+btn.getAttribute("data-i")]);
+          });
+        });
+      });
+  }
+  if (findBtn) findBtn.addEventListener("click", runFind);
+  if (biz) biz.addEventListener("blur", function () {
+    if ((biz.value || "").trim().length >= 4 && matched.hidden) setTimeout(runFind, 150);
+  });
+
+  function done() { thanks.classList.add("is-on"); fields.style.display = "none"; }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (form.company_url && form.company_url.value) { done(); return; } // honeypot
+    var enrich = "";
+    var pid = document.getElementById("lpm-gpid").value;
+    if (pid) {
+      enrich = " | Google: " + (document.getElementById("lpm-grating").value || "?") + "★ (" +
+        (document.getElementById("lpm-greviews").value || "?") + " reviews), " +
+        (document.getElementById("lpm-gaddr").value || "") + " [" + pid + "]";
+    }
+    var payload = {
+      business: biz.value,
+      phone: form.phone.value,
+      trade: "Plumbing",
+      website: "",
+      message: "Miami plumber LP (" + (hasInput.value === "yes" ? "has site" : "no site") + ")" + enrich,
+      sms_consent: document.getElementById("lpm-consent").checked,
+      company_url: ""
+    };
+    fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); }).catch(function () { return {}; }).then(done);
+  });
+})();

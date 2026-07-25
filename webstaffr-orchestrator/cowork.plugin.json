@@ -2,7 +2,7 @@
   "name": "webstaffr-orchestrator",
   "version": "1.0.0",
   "displayName": "WebStaffr Orchestrator",
-  "description": "Claude Cowork's strategist/orchestrator role for WebStaffr 3.0: decomposes tasks, delegates execution to Hermes subagents, and reviews results before anything is committed or pushed. Non-MVP tooling — see README.md.",
+  "description": "Claude Cowork's strategist/orchestrator role for WebStaffr 3.0: decomposes tasks, delegates execution to Hermes subagents, and reviews results before anything is committed or pushed. Non-MVP tooling : see README.md.",
   "author": "Cap'n (Keith Tortorich) + Claude",
   "license": "Proprietary",
   "keywords": ["webstaffr", "orchestration", "hermes", "delegation", "subagents"],
@@ -19,7 +19,7 @@
   ],
   "dependencies": {
     "required_capabilities": ["terminal", "file"],
-    "external": "Hermes agent gateway (~/.hermes) with subagent delegation enabled (config.yaml: delegation.orchestrator_enabled, confirmed true 2026-07-12 — key path corrected here, was previously miswritten as subagents.orchestrator_enabled)",
+    "external": "Hermes agent gateway (~/.hermes) with subagent delegation enabled (config.yaml: delegation.orchestrator_enabled, confirmed true 2026-07-12 : key path corrected here, was previously miswritten as subagents.orchestrator_enabled)",
     "python": ">=3.9"
   },
   "settings": {

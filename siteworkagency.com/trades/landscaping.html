@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="estate" data-heromotion="kenburns">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+      AI Talking Websites For Landscaping Businesses
+    </title>
+    <meta name="description" content="An AI talking website for landscaping companies — free to get started — we build it for you in about 48 hours and you see it live before you pay anything. The built-in AI voice answers your customers, takes bookings, and texts you every lead, 24/7. Plans from $97/mo. No contract, cancel anytime.">
+
+    <link rel="icon" href="../favicon.ico" sizes="48x48">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+    <meta name="theme-color" content="#0C1712">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;600;700;800&family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&family=Instrument+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../site/styles.css%3Fv=9acd565e1d.css">
+    <link rel="stylesheet" href="../site/mkt-voice.css%3Fv=9acd565e1d.css">
+    <script src="../site/main.js%3Fv=9acd565e1d">
+    </script>
+
+    <meta name="csrf-token" content="Dy4lHFUjPD41ETUdEiY2ezF-I1NeLSo77_wFxnkFGkcLDBeObJd22Fpt">
+  </head>
+  <body class="lp-trade">
+    <style>
+  /* Trade landing-page conversion components (scoped .lpm-*), shared by all 8 /trades/:slug
+     pages. Mirrors the /lp/garage-door-pros FB-ad style. Braces inside <style> are NOT
+     interpolated by HEEx, so this CSS is safe verbatim. */
+  .lpm-hero-sub { max-width: 54ch; }
+  .lpm-hero-sub strong { color: var(--ink); }
+  .lpm-skip { display: inline-flex; align-items: center; gap: 7px; margin-top: 14px; font: 600 14px/1 var(--font-body); color: var(--ink-soft); border-bottom: 1px dashed var(--line); padding-bottom: 3px; }
+  .lpm-skip:hover { color: var(--accent); border-color: var(--accent); }
+
+  .lpm-anchor { background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .lpm-anchor-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; margin-top: 26px; }
+  .lpm-acard { background: var(--bg3); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 22px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .lpm-acard.is-win { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, var(--bg3)), var(--bg3)); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .lpm-acard .lpm-alabel { font: 600 12.5px/1.35 var(--font-body); color: var(--ink-soft); min-height: 2.8em; display: flex; align-items: center; justify-content: center; }
+  .lpm-anum { font: var(--display-weight) clamp(44px, 12vw, 68px)/1 var(--font-display); letter-spacing: var(--display-spacing); margin: 10px 0 6px; color: var(--ink); }
+  .lpm-acard.is-win .lpm-anum { color: var(--accent); }
+  .lpm-asub { font: 600 13.5px/1.4 var(--font-body); color: var(--ink-soft); }
+  .lpm-acard.is-win .lpm-asub { color: var(--ink); }
+  .lpm-vs { align-self: center; font: 700 13px/1 var(--font-display); color: var(--ink-soft); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; }
+  .lpm-anchor-note { text-align: center; margin-top: 20px; color: var(--ink-soft); font: 600 14.5px/1.5 var(--font-body); }
+  .lpm-anchor-note b { color: var(--ink); }
+
+  .lpm-demo { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; background: var(--bg3); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; margin-top: 26px; }
+  .lpm-demo-shot { width: 132px; border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 14px 40px rgba(0,0,0,.45); display: block; }
+  .lpm-demo-body .lpm-demo-tag, .lpm-quote .lpm-demo-tag { font: 700 11.5px/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .lpm-demo-body h3 { font: var(--display-weight) 22px/1.15 var(--font-display); letter-spacing: var(--display-spacing); margin: 8px 0 6px; color: var(--ink); }
+  .lpm-demo-body p { color: var(--ink-soft); margin: 0 0 14px; font-size: 14.5px; }
+  .lpm-demo-link { font: 700 14px/1 var(--font-body); color: var(--accent); }
+
+  .lpm-compare { margin-top: 26px; border: 1px solid var(--paper-line); border-radius: var(--radius); overflow: hidden; background: #fff; }
+  .lpm-crow { display: grid; grid-template-columns: 1.1fr 1fr 1fr; }
+  .lpm-crow + .lpm-crow { border-top: 1px solid var(--paper-line); }
+  .lpm-cell { padding: 14px 16px; font: 600 14px/1.4 var(--font-body); color: var(--paper-ink); }
+  .lpm-cell.lpm-rowlabel { color: var(--paper-soft); font-weight: 700; }
+  .lpm-cell.lpm-diy { color: var(--paper-soft); background: color-mix(in srgb, var(--paper-ink) 4%, #fff); }
+  .lpm-cell.lpm-us { background: color-mix(in srgb, var(--accent) 12%, #fff); color: var(--paper-ink); font-weight: 700; }
+  .lpm-chead .lpm-cell { font: 700 13px/1.2 var(--font-display); }
+  .lpm-cmark { color: var(--accent); font-weight: 800; margin-right: 4px; }
+
+  .lpm-scarcity { display: flex; align-items: center; gap: 12px; justify-content: center; max-width: 660px; margin: 22px auto 0; padding: 13px 18px; background: color-mix(in srgb, var(--accent) 10%, var(--bg2)); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 999px; color: var(--ink); font: 600 14px/1.4 var(--font-body); text-align: center; }
+  .lpm-scarcity svg { color: var(--accent); flex: none; }
+
+  .lpm-or { display: flex; align-items: center; gap: 14px; max-width: 440px; margin: 20px auto 4px; color: var(--ink-soft); font: 700 12px/1 var(--font-body); letter-spacing: .1em; }
+  .lpm-or::before, .lpm-or::after { content: ""; height: 1px; flex: 1; background: var(--line); }
+
+  .lpm-quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+  .lpm-quotes.is-proof { max-width: 840px; margin-inline: auto; }
+  @media (min-width: 721px) { .lpm-quotes.is-proof { grid-template-columns: repeat(2, 1fr); } }
+  .lpm-quote { background: var(--bg3); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; }
+  .lpm-stars { color: var(--accent); letter-spacing: 2px; font-size: 15px; margin-bottom: 10px; }
+  .lpm-qtext { font: 500 15.5px/1.5 var(--font-body); color: var(--ink); margin: 0 0 16px; flex: 1; }
+  .lpm-qwho { display: flex; align-items: center; gap: 11px; }
+  .lpm-qavatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(140deg, var(--accent-2), var(--accent)); color: var(--on-accent); font: 700 16px/1 var(--font-display); display: flex; align-items: center; justify-content: center; flex: none; }
+  .lpm-qname { font: 700 14px/1.2 var(--font-body); color: var(--ink); }
+  .lpm-qcity { font: 500 12.5px/1.2 var(--font-body); color: var(--ink-soft); }
+
+  @media (max-width: 720px) {
+    .lpm-quotes { grid-template-columns: 1fr; }
+    .lpm-anchor-grid { grid-template-columns: 1fr; gap: 12px; }
+    .lpm-vs { margin: 0 auto; }
+    .lpm-demo { grid-template-columns: 1fr; text-align: center; }
+    .lpm-demo-shot { margin: 0 auto; }
+    .lpm-crow { grid-template-columns: 1fr 1fr; }
+    .lpm-chead .lpm-rowlabel, .lpm-crow .lpm-rowlabel { grid-column: 1 / -1; background: color-mix(in srgb, var(--paper-ink) 5%, #fff); padding-bottom: 4px; }
+  }
+</style>
+
+<header class="site-header" data-screen-label="Header">
+  <div class="wrap">
+    <a class="logo" href="../index.html" aria-label="SiteWork">
+      <span class="logo-main">Site<em>Work</em></span>
+      <span class="logo-sub">We make your site work</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html">Home</a>
+      <a href="../what-it-does.html">What It Does</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="../trades.html" class="active">Trades</a>
+      <a href="landscaping.html#faq">FAQ</a>
+    </nav>
+    <div class="header-cta">
+      <a class="header-phone" href="tel:18883028368">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>(888) 302-8368
+      </a>
+      <a class="btn btn-primary" href="landscaping.html#get-demo">Get Started Free</a>
+    </div>
+  </div>
+</header>
+
+<section class="gd-hero" data-screen-label="Hero">
+  <div class="gd-hero-bg" style="background-image:url(https://siteworkagency.com/trades/&)" aria-hidden="true">
+  </div>
+  <div class="gd-hero-scrim" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="kicker">Landscaping Pros · Free to get started · See it before you pay</span>
+    <h1>
+      <span class="gd-h1-full">The landscaping site that <em>lands the project</em> — and texts you the lead.</span>
+      <span class="gd-h1-short">A landscaping site that <em>lands the project</em> — and texts you the lead.</span>
+    </h1>
+    <p class="lpm-hero-sub">
+      We build you a custom website with AI built in — it answers your customers about design, hardscape, lawn care, irrigation, cleanups, books the job right on the site, and texts you every lead, day or night.
+      <strong>Free to get started. You only pay if you keep it.</strong>
+    </p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary btn-lg" href="landscaping.html#get-demo">Get Started Free</a>
+      <button class="btn btn-ghost btn-lg hero-orb" type="button" data-voice-trade="landscaping">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:9px"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>Tap to try the AI demo
+      </button>
+    </div>
+    <a class="lpm-skip" href="landscaping.html#start">Rather not talk? Fill in the quick form instead ↓</a>
+    <div class="free-row" style="margin-bottom:8px;margin-top:18px">
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>$0 to get started
+      </span>
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>Live in ~48 hours
+      </span>
+      <span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"></path></svg>No card to apply
+      </span>
+    </div>
+    <div class="gd-hero-trades">
+      <span class="gd-chip">Design</span><span class="gd-chip">Hardscape</span><span class="gd-chip">Lawn Care</span><span class="gd-chip">Irrigation</span><span class="gd-chip">Cleanups</span><span class="gd-chip">Maintenance</span>
+    </div>
+  </div>
+</section>
+
+<section class="section lpm-anchor" data-screen-label="The math">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="kicker">The Math</span>
+      <h2>A site like this isn't cheap to build. Yours is $0 to get started.</h2>
+    </div>
+    <div class="lpm-anchor-grid reveal">
+      <div class="lpm-acard">
+        <span class="lpm-alabel">
+          What a web agency charges to build a custom site like this
+        </span>
+        <span class="lpm-anum" data-count="8000" data-prefix="$">$8,000</span>
+        <span class="lpm-asub">
+          $5,000–$15,000 typical — and it still can't answer a customer's question at midnight.
+        </span>
+      </div>
+      <span class="lpm-vs">vs</span>
+      <div class="lpm-acard is-win">
+        <span class="lpm-alabel">What you pay to get started with yours</span>
+        <span class="lpm-anum" data-count="0" data-prefix="$">$0</span>
+        <span class="lpm-asub">
+          Plans from $97/mo — only if you keep it. One hardscape project covers a season.
+        </span>
+      </div>
+    </div>
+    <p class="lpm-anchor-note">
+      <b>Why's it free to start?</b>
+      Because we'd rather show you than pitch you. We build your site, you see it
+      live, and you pick a plan only if you keep it — we only get paid if it's good
+      enough to keep.
+    </p>
+  </div>
+</section>
+
+<section class="lp-proof" data-screen-label="Positioning strip">
+  <div class="wrap">
+    <p>Custom-built for <b>landscaping companies</b> across the country.</p>
+    <div class="lp-proof-tags">
+      <span>$0 to get started</span>
+      <span>See it before you pay</span>
+      <span>Plans from $97/mo</span>
+      <span>AI voice + lead texts, day one</span>
+    </div>
+    
+  </div>
+</section>
+
+<section class="section lp-problem" data-screen-label="The problem">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">The Real Cost</span>
+      <h2>Every missed call is a landscaping job going to the next guy.</h2>
+      <p>A homeowner planning a backyard redo is calling three companies for quotes. The one who answers and sounds organized wins the walkthrough. Design and hardscape jobs run $2,000–$25,000 — miss the call and you miss the whole project, plus the recurring maintenance behind it.</p>
+    </div>
+    <div class="lp-problem-grid reveal">
+      <div class="lp-prob">
+        <span class="lp-prob-x">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6 18 18M18 6 6 18"></path>
+          </svg>
+        </span>
+        <b>A site that can't talk</b>
+        <p>
+          Visitors read a page, find no price or answer, and bounce to a company who picks up.
+        </p>
+      </div>
+      <div class="lp-prob">
+        <span class="lp-prob-x">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6 18 18M18 6 6 18"></path>
+          </svg>
+        </span>
+        <b>Leads stuck in a form</b>
+        <p>A contact form sits unread overnight — the job's gone by morning.</p>
+      </div>
+      <div class="lp-prob">
+        <span class="lp-prob-x">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6 18 18M18 6 6 18"></path>
+          </svg>
+        </span>
+        <b>Invisible on Google &amp; AI</b>
+        <p>One thin page can't rank for "lawn care near me" or get named by ChatGPT.</p>
+      </div>
+    </div>
+    <div class="lp-early-cta reveal">
+      <a class="btn btn-primary btn-lg" href="landscaping.html#get-demo">Get Started Free</a>
+      <span class="lp-cta-fine">Nothing down · See it before you pay · Cancel anytime</span>
+    </div>
+  </div>
+</section>
+
+<section class="gd-voice" id="voice" data-screen-label="Voice AI on your site">
+  <span class="gd-glow gd-glow-1" aria-hidden="true"></span>
+  <span class="gd-glow gd-glow-2" aria-hidden="true"></span>
+  <div class="wrap gd-voice-inner">
+    <div class="gd-voice-copy reveal">
+      <span class="kicker">On Your Customers' Screen</span>
+      <h2>Skip the hold music.<br><em>Just talk.</em></h2>
+      <p>
+        Your customers don't fill out forms and wait. They tap once and talk — and your website answers out loud, instantly, day or night. It knows your services, your prices, and the areas you cover, then texts you the lead before they hang up.
+      </p>
+      <div class="vf-points">
+        <div class="vf-point">
+          <span class="vf-dot">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+          </span>
+          <p><b>Answers in seconds, 24/7</b> — even at 2am, on weekends and holidays.</p>
+        </div>
+        <div class="vf-point">
+          <span class="vf-dot">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+          </span>
+          <p>
+            <b>Knows your business</b> — services, pricing, warranties and the towns you cover.
+          </p>
+        </div>
+        <div class="vf-point">
+          <span class="vf-dot">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"></path>
+            </svg>
+          </span>
+          <p>
+            <b>Texts you every lead</b>
+            — name, number and the full conversation, straight to your phone.
+          </p>
+        </div>
+      </div>
+      <div class="gd-voice-cta">
+        <button class="btn btn-primary btn-lg hero-orb" type="button" data-voice-trade="landscaping">
+          Hear it for yourself
+        </button>
+        <a class="btn btn-ghost btn-lg" href="landscaping.html#get-demo">Get Started Free</a>
+      </div>
+    </div>
+    <div class="gd-voice-stage reveal">
+      <div class="gd-orb-stage">
+        <span class="gd-orb-ring"></span><span class="gd-orb-ring"></span><span class="gd-orb-ring"></span>
+        <button class="orb hero-orb" aria-label="Tap to try the AI demo" data-voice-trade="landscaping">
+          <span class="orb-ring"></span><span class="orb-ring"></span><span class="orb-ring"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+            <line x1="12" y1="18" x2="12" y2="22"></line>
+          </svg>
+          <span class="orb-bars"><i></i><i></i><i></i><i></i><i></i></span>
+        </button>
+      </div>
+      <span class="hv-status"></span>
+      <span class="gd-orb-cap">
+        <span class="hv-live"></span>
+        Tap to try the AI — a demo landscaping assistant. It's the AI, not a person.
+      </span>
+    </div>
+  </div>
+</section>
+
+<section class="section on-paper" data-screen-label="DIY vs done-for-you">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Why not just use Wix or Durable?</span>
+      <h2>DIY builders hand you a toolbox. We hand you a finished site.</h2>
+      <p>
+        You run a landscaping business, not a web shop. The "free" builders are only free until you count the nights you'll spend on them — and they still can't answer a call.
+      </p>
+    </div>
+    <div class="lpm-compare reveal">
+      <div class="lpm-crow lpm-chead">
+        <span class="lpm-cell lpm-rowlabel"></span>
+        <span class="lpm-cell lpm-diy">Wix / Durable / GoDaddy</span>
+        <span class="lpm-cell lpm-us">SiteWork (done-for-you)</span>
+      </div>
+      <div class="lpm-crow">
+        <span class="lpm-cell lpm-rowlabel">Who builds it</span>
+        <span class="lpm-cell lpm-diy">You do — after a 10-hour day</span>
+        <span class="lpm-cell lpm-us"><span class="lpm-cmark">✓</span>We do, in ~48 hours</span>
+      </div>
+      <div class="lpm-crow">
+        <span class="lpm-cell lpm-rowlabel">The AI voice</span>
+        <span class="lpm-cell lpm-diy">None — it's a silent page</span>
+        <span class="lpm-cell lpm-us">
+          <span class="lpm-cmark">✓</span>Answers callers + texts you the lead
+        </span>
+      </div>
+      <div class="lpm-crow">
+        <span class="lpm-cell lpm-rowlabel">Changes &amp; upkeep</span>
+        <span class="lpm-cell lpm-diy">You, forever</span>
+        <span class="lpm-cell lpm-us">
+          <span class="lpm-cmark">✓</span>Text us — live in minutes
+        </span>
+      </div>
+      <div class="lpm-crow">
+        <span class="lpm-cell lpm-rowlabel">Found on Google + ChatGPT</span>
+        <span class="lpm-cell lpm-diy">You figure out the SEO</span>
+        <span class="lpm-cell lpm-us"><span class="lpm-cmark">✓</span>Built in from day one</span>
+      </div>
+      <div class="lpm-crow">
+        <span class="lpm-cell lpm-rowlabel">Real cost</span>
+        <span class="lpm-cell lpm-diy">$16–$49/mo + your nights</span>
+        <span class="lpm-cell lpm-us">
+          <span class="lpm-cmark">✓</span>$0 to get started, plans from $97/mo
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" data-screen-label="Proof">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Landscaping Pros</span>
+      <h2>Built for pros who'd rather be on the job.</h2>
+    </div>
+    <div class="lpm-quotes is-proof reveal">
+      <div class="lpm-quote">
+        <span class="lpm-demo-tag">What it catches</span>
+        <p class="lpm-qtext">Weekend design inquiry answered instantly while you&#39;re on a mow.</p>
+      </div>
+      <div class="lpm-quote">
+        <span class="lpm-demo-tag">What it catches</span>
+        <p class="lpm-qtext">Irrigation/maintenance lead captured with details so you follow up first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section lp-offer" data-screen-label="The offer">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <span class="kicker">The Offer</span>
+      <h2>Free to get started. You only pay if you keep it.</h2>
+      <p>
+        Why free to start? We only get paid if you keep it — so we have to build a landscaping site good enough that you do. No setup fee. No contract.
+      </p>
+    </div>
+
+    <div class="lp-offer-steps reveal">
+      <div class="lp-step">
+        <span class="lp-step-n">1</span>
+        <b>Tell us about your business</b>
+        <p>A few quick questions: your services, your area.</p>
+      </div>
+      <div class="lp-step">
+        <span class="lp-step-n">2</span>
+        <b>We build it free, in ~48 hours</b>
+        <p>A custom site with the AI trained on your landscaping business.</p>
+      </div>
+      <div class="lp-step">
+        <span class="lp-step-n">3</span>
+        <b>Keep it or walk away</b>
+        <p>Love it, claim it and pick your plan. Don't, walk away, pay nothing.</p>
+      </div>
+    </div>
+
+    <div class="lpm-scarcity reveal">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3 2"></path>
+      </svg>
+      We build a limited number of new sites each month, so each one gets built right — not cranked out.
+    </div>
+  </div>
+</section>
+
+<section class="section on-paper lp-faq-section" id="faq" data-screen-label="FAQ">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="kicker">Straight Answers</span>
+      <h2>The questions every landscaping pro asks.</h2>
+    </div>
+    <div class="lp-faq reveal">
+      <details>
+        <summary>Is it really free to get started?</summary>
+        <p>
+          Yes. Apply in about 2 minutes — no card, nothing down — and we build your custom landscaping website
+          free. You see it finished and live before you pay anything. Keep it and pick a plan;
+          walk away and you've spent nothing.
+        </p>
+      </details>
+      <details>
+        <summary>What's the catch?</summary>
+        <p>
+          No catch. We make our money on the plans — and we only get paid if the site is good
+          enough to keep. So it's on us to build a landscaping site you'd actually want
+          running your business.
+        </p>
+      </details>
+      <details>
+        <summary>What does it cost if I keep it?</summary>
+        <p>
+          Three plans, month to month. Basic Site is $97/month — the
+          site, hosting and care, edits by text, and a lead form that texts you every enquiry.
+          Talking Site is $297/month — the one we recommend — adding
+          the AI voice agent that talks with visitors 24/7, answers their questions, takes
+          bookings right in the conversation, and texts you every lead. Market Leader is $1,497/month, adding ongoing SEO &amp; GEO so you own Google and the AI answers in your area.
+        </p>
+      </details>
+      <details>
+        <summary>Why landscaping companies specifically?</summary>
+        <p>
+          Because we build each site by hand and train the AI on your real services, prices and
+          service area. A hand-built site just converts better than a DIY template you fill in yourself.
+        </p>
+      </details>
+      <details>
+        <summary>I'm not techy — is this a hassle?</summary>
+        <p>
+          Not at all. We build the whole thing for you. Want to change a price or add a photo later?
+          Just text us and it's live in minutes. No portal to learn, no web guy to chase.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band lp-getdemo" id="get-demo" data-screen-label="Get started">
+  <div class="cta-bg" style="background-image:url(https://siteworkagency.com/trades/&)" aria-hidden="true">
+  </div>
+  <div class="cta-scrim" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="kicker">Built For You, Free To Start</span>
+    <h2>Your landscaping talking website is 48 hours away.</h2>
+    <p>
+      Free to get started — you see it live before you pay anything. Pick a plan only if you keep it. Month to month, cancel anytime.
+    </p>
+
+    <div class="lp-onboard" id="start">
+      <div id="phx-GL8z-mEsn3nrxCsR" data-phx-session="SFMyNTY.g2gDaAJhBnQAAAAIdwJpZG0AAAAUcGh4LUdMOHotbUVzbjNucnhDc1J3BHZpZXd3LEVsaXhpci5TaXRld29ya1dlYi5JbnRha2UuTGFuZGluZ09uYm9hcmRMaXZldwpwYXJlbnRfcGlkdwNuaWx3B3Nlc3Npb250AAAAAW0AAAAPb25ib2FyZF9sYW5kaW5ndAAAAAJtAAAACWNsaWVudF9pcG0AAAANMTIwLjI5Ljc3LjEzOW0AAAAFdHJhZGVtAAAAC2xhbmRzY2FwaW5ndwZyb3V0ZXJ3A25pbHcRbGl2ZV9zZXNzaW9uX25hbWV3A25pbHcIcm9vdF9waWR3A25pbHcJcm9vdF92aWV3dyxFbGl4aXIuU2l0ZXdvcmtXZWIuSW50YWtlLkxhbmRpbmdPbmJvYXJkTGl2ZW4GAPfdES-fAWIAAVGA.ldCoJJawMxFwLoBJH-qkx_lOHk5bv_3Ua6NHKMTCN-Y" data-phx-static="SFMyNTY.g2gDaAJhBnQAAAADdwJpZG0AAAAUcGh4LUdMOHotbUVzbjNucnhDc1J3BWZsYXNodAAAAAB3CmFzc2lnbl9uZXdqbgYA990RL58BYgABUYA.Wy1-ixHumUTmY30guw3-t3YvjcVchOq7p8AJdnEjgJY"><div class="sw-wiz sw-wiz-embed sw-wiz-dark">
+  <style>
+  .sw-wiz{
+    --ink:#16181d; --muted:#5b6470; --line:#e4e0d8; --paper:#f3efe7;
+    --amber:#e8631a; --amber-dk:#c44f10; --card:#fffdfa;
+    min-height:100dvh; margin:0; padding:1.5rem 1rem 3rem;
+    font-family:"Hanken Grotesk",ui-sans-serif,system-ui,sans-serif; color:var(--ink);
+    background:var(--paper);
+    background-image:linear-gradient(rgba(22,24,29,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(22,24,29,.04) 1px,transparent 1px);
+    background-size:26px 26px;
+    display:flex; align-items:flex-start; justify-content:center;
+  }
+  /* Embedded on a landing page (LandingOnboardLive): drop the full-page sizing + paper grid
+     so the card sits cleanly inside the host section. */
+  .sw-wiz-embed{min-height:0; padding:0; background:none; background-image:none}
+  .sw-wiz-embed .sw-card{margin-top:0}
+  /* Native <fieldset> (the multiselect + the licenses/areas groups) ships a sharp-cornered
+     UA border and crams its checkboxes against it. Reset it so the group reads like the rest
+     of the form (the inner .sw-entry cards keep their own rounded border). Applies to BOTH
+     themes — it's a clean-up in the light wizard too. */
+  .sw-wiz fieldset.sw-field{border:0; padding:0; margin:0 0 1rem; min-inline-size:0}
+  .sw-wiz fieldset.sw-field > legend.sw-label{padding:0; margin-bottom:.5rem}
+  /* Style the native file-picker button so it isn't a stark white chip on the dark field. */
+  .sw-wiz .sw-field input[type=file]{padding-top:.7rem}
+  .sw-wiz .sw-field input[type=file]::file-selector-button{
+    margin-right:.7rem; padding:.5rem .85rem; border:1.5px solid var(--line); border-radius:9px;
+    background:var(--paper); color:var(--ink); font-family:inherit; font-weight:600; cursor:pointer;
+  }
+
+  /* DARK theme for the marketing-embedded wizard so it reads as part of the (dark) site. Scoped
+     to .sw-wiz-dark (only LandingOnboardLive carries it). It FOLLOWS the host page's theme vars
+     (--bg/--ink-soft/--paper-ink/--accent/--on-accent set on :root in the marketing styles.css)
+     so it matches each page's palette — green+gold today, whatever a future LP ships — with solid
+     fallbacks if a var is ever absent. Overrides every element that hard-coded a light surface
+     (#fff / paper tints) or an orange literal. */
+  .sw-wiz-dark{
+    --ink:#f2efe6;
+    --muted:var(--ink-soft, #9fa39a);
+    --card:var(--paper-ink, #15201a);
+    --amber:var(--accent, #c9a23f);
+    --amber-dk:var(--accent, #c9a23f);
+    --on-amber:var(--on-accent, #170f02);
+    --line:rgba(255,255,255,.13);
+    --field:var(--bg, #0c1712);
+  }
+  /* Standalone dark (the texted /onboard page): drop the light paper canvas + blueprint
+     grid for a solid estate-dark page, so it matches the on-site embed's dark look. The
+     embedded variant (.sw-wiz-embed) already has background:none, so exclude it. */
+  .sw-wiz-dark:not(.sw-wiz-embed){background:var(--bg, #0c1712); background-image:none}
+  .sw-wiz-dark .sw-card{
+    background:var(--card); border-color:rgba(255,255,255,.08);
+    box-shadow:0 1px 0 rgba(0,0,0,.3),0 22px 50px -28px rgba(0,0,0,.85);
+  }
+  .sw-wiz-dark .sw-seg{background:rgba(255,255,255,.14)}
+  .sw-wiz-dark .sw-field input,.sw-wiz-dark .sw-field select,.sw-wiz-dark .sw-field textarea{
+    background:var(--field); color:var(--ink); border-color:var(--line);
+  }
+  .sw-wiz-dark .sw-field input::placeholder,.sw-wiz-dark .sw-field textarea::placeholder{color:rgba(255,255,255,.4)}
+  .sw-wiz-dark .sw-field select option{background:var(--card); color:var(--ink)}
+  /* Keep autofilled fields dark — the browser's -webkit-autofill paints a light box that a
+     plain background can't override (the inset box-shadow + text-fill-color is the only way). */
+  .sw-wiz-dark input:-webkit-autofill,.sw-wiz-dark input:-webkit-autofill:hover,
+  .sw-wiz-dark input:-webkit-autofill:focus,.sw-wiz-dark textarea:-webkit-autofill,
+  .sw-wiz-dark select:-webkit-autofill{
+    -webkit-text-fill-color:var(--ink); -webkit-box-shadow:0 0 0 1000px var(--field) inset;
+    caret-color:var(--ink); transition:background-color 9999s ease-in-out 0s;
+  }
+  /* Accent (gold) buttons want a GOLD surface + DARK text (the site's .btn-primary look).
+     .sw-find2/.sw-add inherit `background:var(--ink)` from the base — which is CREAM in the
+     dark scope — so restore the accent background here; .sw-next already has it in the base,
+     and the chip/marks get their accent bg from the base too (text colour only). */
+  .sw-wiz-dark .sw-next,.sw-wiz-dark .sw-find2,.sw-wiz-dark .sw-add{background:var(--amber); color:var(--on-amber)}
+  .sw-wiz-dark .sw-chip.on,.sw-wiz-dark .sw-matched-ok,.sw-wiz-dark .sw-check-mark{color:var(--on-amber)}
+  .sw-wiz-dark .sw-result{background:var(--field); border-color:var(--line)}
+  .sw-wiz-dark .sw-result-img{border-color:var(--line)}
+  .sw-wiz-dark .sw-chip{background:var(--field); color:var(--ink); border-color:var(--line)}
+  .sw-wiz-dark .sw-custom input{background:var(--field); color:var(--ink); border-color:var(--line)}
+  .sw-wiz-dark .sw-selected li{background:rgba(255,255,255,.06); color:var(--ink); border-color:var(--line)}
+  .sw-wiz-dark .sw-x{background:rgba(255,255,255,.14); color:var(--ink)}
+  .sw-wiz-dark .sw-consent{background:rgba(0,0,0,.22); border-color:var(--line)}
+  .sw-wiz-dark .sw-rowbtn{background:rgba(255,255,255,.08); color:var(--ink); border-color:var(--line)}
+  .sw-wiz-dark .sw-entry{border-color:var(--line)}
+  .sw-wiz-dark .sw-back{background:transparent; color:var(--muted); border-color:var(--line)}
+  .sw-wiz-dark .sw-field input[type=file]::file-selector-button{background:rgba(255,255,255,.08); color:var(--ink)}
+  .sw-wiz-dark .sw-matched{background:rgba(255,255,255,.06); border-color:var(--line); color:var(--ink)}
+  .sw-wiz-dark .sw-gnote{color:var(--amber)}
+  .sw-wiz-dark .sw-error{color:#ff8a78}
+  .sw-wiz-dark .sw-flash-err{background:rgba(255,80,70,.14); border-color:rgba(255,80,70,.4); color:#ffb3a6}
+  /* Self-styled flash for the embedded wizard (no app.css/daisyUI on the marketing layout). */
+  .sw-flash-err{margin:0 0 .8rem; padding:.7rem .85rem; border-radius:11px; border:1.5px solid #f1b3a6; background:#fdecea; color:#c0341d; font-weight:600; font-size:.9rem; line-height:1.4}
+  .sw-card{
+    width:100%; max-width:30rem; background:var(--card);
+    border:1px solid var(--line); border-radius:18px;
+    box-shadow:0 1px 0 rgba(22,24,29,.04),0 18px 40px -24px rgba(22,24,29,.35);
+    padding:1.6rem 1.4rem 1.4rem; margin-top:2vh;
+  }
+  .sw-rail{display:flex; gap:.4rem; margin:0 0 .9rem}
+  .sw-seg{flex:1; height:5px; border-radius:99px; background:var(--line); transition:background .3s}
+  .sw-seg.on{background:var(--amber)}
+  .sw-step-meta{font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 .3rem; font-weight:600}
+  .sw-saved{color:var(--amber-dk)}
+  .sw-title{font-family:"Saira",sans-serif; font-weight:700; font-size:1.85rem; line-height:1.05; letter-spacing:-.01em; margin:0 0 .35rem}
+  .sw-sub{color:var(--muted); font-size:.98rem; line-height:1.45; margin:0 0 1.4rem}
+  .sw-body{animation:stepIn .32s cubic-bezier(.22,.61,.36,1)}
+  @keyframes stepIn{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  @media (prefers-reduced-motion:reduce){.sw-body{animation:none}}
+
+  .sw-field{display:block; margin:0 0 1rem}
+  .sw-label{display:block; font-weight:600; font-size:.92rem; margin:0 0 .4rem}
+  .sw-field input,.sw-field select,.sw-field textarea{
+    width:100%; box-sizing:border-box; min-height:54px; padding:.85rem .9rem;
+    border:1.5px solid var(--line); border-radius:12px; font-size:1.05rem; background:#fff;
+    font-family:inherit; color:var(--ink); transition:border-color .15s,box-shadow .15s;
+  }
+  .sw-field textarea{min-height:96px; resize:vertical}
+  .sw-field input:focus,.sw-field select:focus,.sw-field textarea:focus{
+    outline:none; border-color:var(--amber); box-shadow:0 0 0 3px rgba(232,99,26,.16)
+  }
+  .sw-hint{display:block; color:var(--muted); font-size:.82rem; line-height:1.4; margin-top:.45rem}
+  .sw-error{display:block; color:#c0341d; font-size:.84rem; margin-top:.35rem; font-weight:600}
+
+  .sw-chips{display:flex; flex-wrap:wrap; gap:.55rem; margin:0 0 1rem}
+  .sw-chip{
+    appearance:none; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:99px; padding:.6rem .95rem; font-size:.95rem; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:all .12s; line-height:1;
+  }
+  .sw-chip:active{transform:scale(.96)}
+  .sw-chip.on{background:var(--amber); border-color:var(--amber); color:#fff; box-shadow:0 6px 14px -8px rgba(232,99,26,.7)}
+  .sw-custom{display:flex; gap:.5rem; margin:0 0 .9rem}
+  .sw-custom input{flex:1; min-height:48px; padding:.7rem .8rem; border:1.5px solid var(--line); border-radius:11px; font-size:1rem; font-family:inherit}
+  .sw-add{border:0; background:var(--ink); color:#fff; border-radius:11px; padding:0 1.1rem; font-weight:700; cursor:pointer; font-family:inherit}
+  .sw-selected{list-style:none; padding:0; margin:0 0 .8rem; display:flex; flex-wrap:wrap; gap:.45rem}
+  .sw-selected li{display:inline-flex; align-items:center; gap:.4rem; background:#f4efe6; border:1px solid var(--line); border-radius:99px; padding:.35rem .35rem .35rem .75rem; font-size:.9rem; font-weight:600}
+  .sw-x{border:0; background:#e4ddd0; color:var(--ink); width:1.4rem; height:1.4rem; border-radius:99px; cursor:pointer; font-size:1rem; line-height:1}
+  .sw-count{color:var(--muted); font-size:.85rem; margin:.2rem 0 0; font-weight:600}
+
+  .sw-check{display:flex; gap:.6rem; align-items:flex-start; margin:1rem 0 0; font-size:.86rem; line-height:1.45; color:var(--muted)}
+  .sw-check input[type=checkbox]{width:1.3rem; height:1.3rem; min-height:0; margin-top:.05rem; accent-color:var(--amber)}
+  .sw-consent{background:#f6f2ea; border:1px solid var(--line); border-radius:12px; padding:.85rem}
+
+  .sw-entry{border:1px dashed var(--line); border-radius:12px; padding:.85rem; margin:0 0 .75rem}
+  .sw-rowbtn{background:#f4efe6; border:1px solid var(--line); border-radius:9px; padding:.55rem .85rem; cursor:pointer; font-size:.88rem; font-weight:600; font-family:inherit}
+  .sw-upload-list{list-style:none; padding:0; margin:.5rem 0 0; font-size:.85rem; color:var(--muted)}
+
+  .sw-nav{display:flex; gap:.7rem; align-items:center; margin-top:1.6rem}
+  .sw-next{
+    flex:1; min-height:54px; border:0; border-radius:13px; background:var(--amber); color:#fff;
+    font-size:1.08rem; font-weight:700; font-family:"Saira",sans-serif; letter-spacing:.01em;
+    cursor:pointer; transition:background .15s,transform .05s; box-shadow:0 10px 22px -12px rgba(232,99,26,.8);
+  }
+  .sw-next:hover{background:var(--amber-dk)}
+  .sw-next:active{transform:translateY(1px)}
+  .sw-back{min-height:54px; padding:0 1.1rem; border:1.5px solid var(--line); background:#fff; color:var(--muted); border-radius:13px; font-weight:600; cursor:pointer; font-family:inherit}
+
+  .sw-done{text-align:center; padding-top:2.5rem; padding-bottom:2.5rem}
+  .sw-check-mark{width:3.2rem; height:3.2rem; line-height:3.2rem; border-radius:99px; background:var(--amber); color:#fff; font-size:1.7rem; margin:0 auto 1rem; box-shadow:0 12px 26px -12px rgba(232,99,26,.8)}
+
+  /* shared inline link button (Change / search again) */
+  .sw-link{appearance:none; border:0; background:none; color:var(--amber-dk); font-weight:600; font-size:.85rem; cursor:pointer; padding:.15rem 0; font-family:inherit}
+  .sw-link:hover{text-decoration:underline}
+
+  /* step-1 Google business lookup */
+  .sw-bizwrap{display:flex; gap:.5rem; align-items:stretch}
+  .sw-bizwrap input{flex:1; min-width:0}
+  .sw-find2{flex:0 0 auto; border:0; background:var(--ink); color:#fff; border-radius:11px; padding:0 1rem; font-weight:700; font-family:"Saira",sans-serif; font-size:.9rem; white-space:nowrap; cursor:pointer; min-height:50px}
+  .sw-find2:hover{background:var(--amber-dk)}
+  .sw-find2:disabled{opacity:.6; cursor:default}
+  .sw-results{display:flex; flex-direction:column; gap:.45rem; margin:.6rem 0 0}
+  .sw-results-label{font-weight:700; font-size:.9rem; margin:0 0 .15rem; color:var(--ink)}
+  .sw-result{display:flex; gap:.65rem; align-items:center; text-align:left; width:100%; box-sizing:border-box; border:1.5px solid var(--line); border-radius:11px; padding:.6rem .7rem; background:#fff; cursor:pointer; font-family:inherit; transition:border-color .15s,box-shadow .15s}
+  .sw-result:hover{border-color:var(--amber); box-shadow:0 0 0 3px rgba(232,99,26,.12)}
+  .sw-result-img{width:46px; height:46px; flex:none; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:var(--bg)}
+  .sw-result-body{min-width:0; flex:1; display:flex; flex-direction:column}
+  .sw-result-name{font-weight:700; font-size:.95rem; line-height:1.25; color:var(--ink)}
+  .sw-result-meta{font-size:.8rem; color:var(--muted); line-height:1.35; margin-top:.1rem}
+  .sw-result-none{color:var(--muted); font-weight:600; justify-content:center}
+  .sw-matched{display:flex; align-items:center; flex-wrap:wrap; gap:.5rem; margin:.6rem 0 0; padding:.6rem .75rem; border-radius:11px; border:1.5px solid rgba(232,99,26,.45); background:rgba(232,99,26,.10); font-weight:600; font-size:.9rem; color:var(--ink)}
+  .sw-matched-ok{display:inline-flex; width:20px; height:20px; flex:none; align-items:center; justify-content:center; border-radius:50%; background:var(--amber); color:#fff; font-size:.75rem; font-weight:800}
+  .sw-matched .sw-link{margin-left:auto}
+  .sw-gnote{display:block; color:var(--amber-dk); font-weight:600; font-size:.82rem; line-height:1.4; margin-top:.45rem}
+
+  .sw-finder-searching{display:flex; align-items:center; gap:.6rem; color:var(--muted); font-size:.92rem; font-weight:600; padding:.35rem 0}
+  .sw-dots{display:inline-flex; gap:.28rem}
+  .sw-dots i{width:.45rem; height:.45rem; border-radius:99px; background:var(--amber); display:inline-block; animation:swPulse 1s infinite ease-in-out both}
+  .sw-dots i:nth-child(2){animation-delay:.15s}
+  .sw-dots i:nth-child(3){animation-delay:.3s}
+  @keyframes swPulse{0%,80%,100%{opacity:.25; transform:scale(.7)} 40%{opacity:1; transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){.sw-dots i{animation:none; opacity:.7}}
+</style>
+
+  
+  
+
+  <div>
+    
+    
+
+    <div class="sw-card">
+      <div class="sw-rail">
+        <span class="sw-seg on"></span><span class="sw-seg "></span><span class="sw-seg "></span><span class="sw-seg "></span>
+      </div>
+      <p class="sw-step-meta">
+        Step 1 of 4
+        
+      </p>
+      <h2 class="sw-title">Find your business</h2>
+      <p class="sw-sub">Search Google for your business — we build the rest from it.</p>
+
+      
+      
+
+      <form id="onboard-form" phx-change="validate" phx-submit="next">
+        <div class="sw-body" id="landing-step-1">
+          
+          <div>
+            <div class="sw-field">
+  <span class="sw-label">Business name</span>
+  
+  <div class="sw-bizwrap">
+    <input type="text" name="business_name" placeholder="e.g. Precision Garage Door" autocomplete="organization" phx-debounce="blur">
+    <button type="button" class="sw-find2" phx-click="find_business">
+      Find on Google
+    </button>
+  </div>
+  
+
+  
+  
+
+  
+  
+
+  
+  
+
+  
+  
+  
+</div>
+
+<div class="sw-field">
+  <span class="sw-label">Your website (if you have one)</span>
+  <input type="url" name="existing_website_url" placeholder="https://…" inputmode="url" phx-debounce="400" phx-blur="scrape_website">
+  
+  
+  <span class="sw-hint">
+    We'll use it to fill in the rest for you. No website? Leave it blank.
+  </span>
+</div>
+            
+            
+          </div>
+          
+        </div>
+
+        <div class="sw-nav">
+          
+          
+          <button type="submit" class="sw-next" phx-disable-with="Starting…">
+            Continue →
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div></div>
+    </div>
+
+    <div class="lpm-or" id="dropnumber">OR PREFER TO TALK?</div>
+    <div class="lp-getdemo-orb">
+      <button class="orb hero-orb" aria-label="Tap to try the AI demo" data-voice-trade="landscaping">
+        <span class="orb-ring"></span><span class="orb-ring"></span><span class="orb-ring"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+          <line x1="12" y1="18" x2="12" y2="22"></line>
+        </svg>
+        <span class="orb-bars"><i></i><i></i><i></i><i></i><i></i></span>
+      </button>
+    </div>
+    <span class="lp-getdemo-hint">
+      <span class="hv-live"></span>
+      Rather talk it through? Tap to talk to our AI — or call (888) 302-8368.
+    </span>
+    <a class="btn btn-ghost btn-lg" href="tel:18883028368" style="margin-top:18px">
+      Prefer to talk? Call (888) 302-8368
+    </a>
+  </div>
+</section>
+
+<footer class="footer" data-screen-label="Footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="../index.html" aria-label="SiteWork">
+          <span class="logo-main">Site<em>Work</em></span>
+          <span class="logo-sub">We make your site work</span>
+        </a>
+        <p>
+          We build the trades better websites — sites that talk to your customers, take the booking, and text you every lead.
+        </p>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <div class="footer-col">
+          <a href="../index.html">Home</a>
+          <a href="../what-it-does.html">What It Does</a>
+          <a href="../pricing.html">Pricing</a>
+          <a href="landscaping.html#faq">FAQ</a>
+        </div>
+      </div>
+      <div>
+        <h4>Trades</h4>
+        <div class="footer-col">
+          <a href="../trades.html">All Trades</a>
+          <a href="garage-doors.html">Garage Doors</a>
+          <a href="plumbing.html">Plumbing</a>
+          <a href="roofing.html">Roofing</a>
+        </div>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <div class="footer-col">
+          <a href="tel:18883028368">(888) 302-8368</a>
+          <a href="https://siteworkagency.com/cdn-cgi/l/email-protection#38505d545457784b514c5d4f574a53595f5d565b41165b5755"><span class="__cf_email__" data-cfemail="157d7079797a55667c6170627a677e7472707b766c3b767a78">[email&#160;protected]</span></a>
+          <address class="addr">1111 Lincoln Road, Suite 500<br>Miami Beach, FL 33139</address>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span class="js-year">2026</span> SiteWork. All rights reserved.</span>
+      <span>siteworkagency.com</span>
+    </div>
+  </div>
+</footer>
+
+<a class="lp-stickybar" href="landscaping.html#get-demo" data-screen-label="Sticky CTA">
+  <span class="lp-stickybar-txt">
+    <b>Get Started Free</b><span>Nothing down · See it before you pay</span>
+  </span>
+  <span class="lp-stickybar-go">Start →</span>
+</a>
+
+<script data-cfasync="false" src="../cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="../site/lp-funnel.js%3Fv=9acd565e1d">
+</script>
+
+    
+    <script src="../site/mkt-voice.js%3Fv=9acd565e1d">
+    </script>
+    <script src="../site/sw-backend.js%3Fv=9acd565e1d">
+    </script>
+    <script defer phx-track-static type="text/javascript" src="../assets/js/app-fb2c8ae2f02047c66763da3635daeda1.js%3Fvsn=d">
+    </script>
+  </body>
+</html>

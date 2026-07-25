@@ -1,4 +1,4 @@
-# ServiceTitan Integration — Recommended Scaffold
+# ServiceTitan Integration : Recommended Scaffold
 ## WebStaffr 3.0
 ## Date: 2026-07-14
 
@@ -82,7 +82,7 @@ the actual env var names used by the integration.
 Under the MVP core flow section, append:
 
 ```
-- #33 — ServiceTitan integration scaffold created (2026-07-14):
+- #33 : ServiceTitan integration scaffold created (2026-07-14):
   `webstaffr/integrations/servicetitan/` implemented with client, sync,
   mocks, and offline tests in `tests/test_servicetitan.py`. Integration is
   behind `SERVICETITAN_ENABLED=true` in the router, with missing-secret

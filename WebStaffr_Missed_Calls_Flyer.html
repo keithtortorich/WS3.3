@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WebStaffr: Stop Losing Calls</title>
+<style>
+  @font-face{font-family:'Oswald';font-weight:500;src:url('fonts/Oswald-500.ttf') format('truetype');}
+  @font-face{font-family:'Oswald';font-weight:600;src:url('fonts/Oswald-600.ttf') format('truetype');}
+  @font-face{font-family:'Oswald';font-weight:700;src:url('fonts/Oswald-700.ttf') format('truetype');}
+  @font-face{font-family:'Inter';font-weight:400;src:url('fonts/Inter-400.ttf') format('truetype');}
+  @font-face{font-family:'Inter';font-weight:500;src:url('fonts/Inter-500.ttf') format('truetype');}
+  @font-face{font-family:'Inter';font-weight:600;src:url('fonts/Inter-600.ttf') format('truetype');}
+  @font-face{font-family:'Inter';font-weight:700;src:url('fonts/Inter-700.ttf') format('truetype');}
+  @font-face{font-family:'EB Garamond';font-weight:700;font-style:italic;src:url('fonts/EBGaramond-Italic-Bold.ttf') format('truetype');}
+
+  @page{size:Letter;margin:0;}
+
+  :root{
+    --navy:#0f1f3d;
+    --navy-2:#18345c;
+    --gold:#d4b96a;
+    --gold-dim:#d4b96a26;
+    --gold-deep:#a9863f;
+    --paper:#f5f3ee;
+    --ink:#1b2436;
+    --line:#d8d2c2;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+  }
+  .sheet{
+    width:100%;
+    background:var(--paper);
+    overflow:hidden;
+  }
+  .band-hero{
+    background:var(--navy);
+    padding:22px 40px 18px;
+    position:relative;
+  }
+  .band-hero::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:5px;
+    background:var(--gold);
+  }
+  .eyebrow{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+    font-size:12px;
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    color:#fff;
+    font-size:34px;
+    line-height:1.08;
+    margin:0;
+    letter-spacing:.01em;
+  }
+  h1 span{color:var(--gold);}
+  .band-sub{
+    background:var(--gold-dim);
+    padding:12px 40px;
+    border-bottom:1px solid var(--line);
+  }
+  .band-sub p{
+    margin:0;
+    font-size:17px;
+    line-height:1.5;
+    color:var(--navy);
+    font-weight:500;
+    max-width:560px;
+  }
+  .band-sub b{color:var(--navy-2);}
+  .section{padding:14px 40px;}
+  .section + .section{border-top:1px solid var(--line);}
+  h2{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--navy);
+    font-size:19px;
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  h2::before{
+    content:"";
+    width:8px;height:8px;
+    background:var(--gold);
+    display:inline-block;
+    transform:rotate(45deg);
+  }
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{
+    background:var(--navy);
+    color:#fff;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-size:11.5px;
+    padding:11px 12px;
+    text-align:left;
+  }
+  td{
+    padding:11px 12px;
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+  }
+  tr:nth-child(even) td{background:#eceada;}
+  .disclaimer{
+    font-size:11px;
+    color:#6b6455;
+    margin-top:6px;
+    font-style:italic;
+  }
+  .example-box{
+    background:var(--navy);
+    color:#fff;
+    padding:12px 28px;
+    display:flex;
+    gap:26px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .example-box .figure{
+    font-family:'Oswald',sans-serif;
+    font-size:44px;
+    font-weight:700;
+    color:var(--gold);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .example-box .figure small{
+    display:block;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:500;
+    color:#cdd4e2;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    margin-top:6px;
+  }
+  .example-box .math{
+    font-size:14px;
+    line-height:1.7;
+    color:#dfe3ec;
+    flex:1;
+    min-width:220px;
+  }
+  .example-box .math b{color:#fff;}
+  .staff-list{list-style:none;margin:0;padding:0;}
+  .staff-list li{
+    padding:6px 0 6px 30px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    font-size:13.5px;
+    line-height:1.3;
+  }
+  .staff-list li:last-child{border-bottom:none;}
+  .staff-list li::before{
+    content:"";
+    position:absolute;
+    left:0; top:16px;
+    width:14px;height:14px;
+    background:var(--gold);
+    border-radius:50%;
+  }
+  .staff-list b{color:var(--navy-2);}
+  .team-header{
+    background:var(--navy);
+    padding:14px 40px 10px;
+    text-align:center;
+  }
+  .team-header h2{
+    color:#fff;
+    justify-content:center;
+    margin-bottom:8px;
+  }
+  .team-header h2::before{display:none;}
+  .team-header p{
+    color:#cdd4e2;
+    margin:0;
+    font-size:14px;
+  }
+  .tiers{
+    display:flex;
+    gap:14px;
+    padding:12px 40px 16px;
+    background:var(--navy);
+  }
+  .tier{
+    flex:1;
+    background:#152a4e;
+    border:1px solid #2b4a7a;
+    padding:12px 18px 14px;
+    position:relative;
+  }
+  .tier ul{
+    margin:0;padding:0;list-style:none;
+    font-size:13px;
+    color:#c9d1e2;
+    line-height:1.7;
+  }
+  .tier ul li::before{content:"- ";color:var(--gold);}
+  .footer{
+    background:var(--gold-deep);
+    padding:10px 40px;
+    text-align:center;
+  }
+  .footer .word{
+    font-family:'EB Garamond',serif;
+    font-weight:700;
+    font-style:italic;
+    text-transform:none;
+    font-size:26px;
+    letter-spacing:.01em;
+    color:var(--navy);
+    margin:0 0 6px;
+  }
+  .footer .tag{
+    font-size:14px;
+    font-weight:600;
+    color:#3a3218;
+    margin:0 0 16px;
+  }
+  .cta{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    padding:10px 26px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="band-hero">
+    <p class="eyebrow">For HVAC, Roofing &amp; Plumbing Contractors</p>
+    <h1>Stop Losing <span>$25,000&#8211;$50,000</span> a Year to Missed Calls</h1>
+  </div>
+
+  <div class="band-sub">
+    <p>Every call your business misses is a job someone else gets. <b>Receptionist</b> answers every call, day or night, so you never lose another one.</p>
+  </div>
+
+  <div class="section">
+    <h2>The Missed Call Problem</h2>
+    <table>
+      <thead>
+        <tr><th>Home Service Trades</th><th>Typical Missed-Call Rate</th><th>Avg. Job Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Industry Standard</td><td>~40%</td><td>$650&#8211;$700</td></tr>
+      </tbody>
+    </table>
+    <p class="disclaimer">Figures are illustrative industry ranges for planning purposes, not a specific customer result.</p>
+  </div>
+
+  <div class="section" style="padding-top:0;padding-bottom:0;">
+    <div class="example-box">
+      <div class="figure">$27,000<small>Lost Per Year</small></div>
+      <div class="math">A contractor missing just <b>5 calls a month</b> at an average job value of <b>$450</b> loses roughly <b>$2,250 a month</b>, about <b>$27,000 a year</b>, before counting the repeat and referral business that call would have brought.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What Receptionist Does</h2>
+    <ul class="staff-list">
+      <li><b>Answers every call in two rings</b>, twenty-four hours a day, including nights, weekends, and holidays.</li>
+      <li><b>Books the job straight into your schedule</b> so it's waiting for you, not buried in a voicemail box.</li>
+      <li><b>Texts the customer a confirmation</b> before you even see the missed-call notification.</li>
+      <li><b>Never takes a sick day, a lunch break, or a bad mood</b> into a call with your customer.</li>
+    </ul>
+  </div>
+
+  <div class="team-header">
+    <h2>Build Your Office Team</h2>
+    <p>You stay on the tools. We run the office.</p>
+  </div>
+  <div class="tiers">
+    <div class="tier">
+      <ul>
+        <li>Website Operations Manager</li>
+        <li>Service Advisor</li>
+        <li>Receptionist</li>
+        <li>Lead Coordinator</li>
+      </ul>
+    </div>
+    <div class="tier">
+      <ul>
+        <li>Reputation Manager</li>
+        <li>Sales Consultant</li>
+        <li>Marketing Coordinator</li>
+        <li>Growth Manager</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="word">WebStaffr</p>
+    <p class="tag">You stay on the tools. We run the office.</p>
+    <a class="cta" href="#">Get Your Free Website in 48 Hours</a>
+  </div>
+
+</div>
+</body>
+</html>

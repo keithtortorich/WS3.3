@@ -29,10 +29,14 @@ pytest-cache-files-*/
 .vscode-test
 .env*
 
-# Sibling projects grouped here on disk for convenience (2026-07-25).
-# Each is its own independent git repository with its own remote
-# (WebStaffr3.0, smmm) — never tracked, committed, or deployed as part
-# of this repo. Kept out of `git add`/`git status` entirely so a nested
-# .git is never mistaken for a submodule.
-/WebStaffr 3.0/
-/social-media-marketing-machine/
+# WebStaffr 3.0 and social-media-marketing-machine were merged into this
+# repo's history on 2026-07-25 (see commits e92d94d, 012bb82; full pre-merge
+# history at branches archive/webstaffr-3.0-pre-merge and archive/smm-pre-merge).
+# They are genuinely tracked subdirectories now, not sibling repos — do not
+# re-add an ignore entry for these paths.
+
+# Nested venvs (each subproject keeps its own; the global .venv/ pattern
+# above already covers these, listed for clarity)
+/WebStaffr 3.0/.venv/
+/social-media-marketing-machine/backend/.venv/
+/social-media-marketing-machine/frontend/node_modules/

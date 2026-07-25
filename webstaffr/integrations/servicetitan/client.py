@@ -69,9 +69,6 @@ class ServiceTitanClient:
 
         self._access_token: Optional[str] = None
 
-    # ------------------------------------------------------------------
-    # Auth
-    # ------------------------------------------------------------------
     def _get_access_token(self) -> str:
         if self._access_token:
             return self._access_token
@@ -104,9 +101,6 @@ class ServiceTitanClient:
         self._access_token = token
         return token
 
-    # ------------------------------------------------------------------
-    # Request helper
-    # ------------------------------------------------------------------
     def _request(self, method: str, path: str, payload: Optional[dict[str, Any]] = None) -> dict[str, Any]:
         token = self._get_access_token()
         url = f"{self.base_url}{path}"
@@ -133,9 +127,6 @@ class ServiceTitanClient:
         except urllib.error.URLError as exc:
             raise ServiceTitanHTTPError(f"ServiceTitan unreachable for {method} {path}: {exc}") from exc
 
-    # ------------------------------------------------------------------
-    # Record accessors - read-first
-    # ------------------------------------------------------------------
     def list_jobs(self, *, modified_since: Optional[str] = None, limit: int = 100) -> list[dict[str, Any]]:
         return self._get_collection("jobs", modified_since=modified_since, limit=limit)
 

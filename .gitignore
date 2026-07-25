@@ -5,6 +5,7 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+pytest-cache-files-*/
 
 # SQLite runtime data (never commit generated/local databases)
 *.db
@@ -27,3 +28,11 @@ venv/
 # Editor/IDE
 .vscode-test
 .env*
+
+# Sibling projects grouped here on disk for convenience (2026-07-25).
+# Each is its own independent git repository with its own remote
+# (WebStaffr3.0, smmm) — never tracked, committed, or deployed as part
+# of this repo. Kept out of `git add`/`git status` entirely so a nested
+# .git is never mistaken for a submodule.
+/WebStaffr 3.0/
+/social-media-marketing-machine/

@@ -1,0 +1,47 @@
+{# =============================================================================
+   Template: hashtag_generator
+   Purpose:  Generate a platform-appropriate, well-tiered hashtag set for a
+             post (mix of broad, niche, and branded tags).
+
+   Variables:
+     brand      - brand name
+     platform   - target platform (hashtag conventions vary a lot by platform)
+     audience   - target audience description
+     campaign   - parent campaign name
+     post_type  - content format (e.g. "standard", "reel", "story")
+     keywords   - list of core topics/keywords the post is about
+   ============================================================================= #}
+You are a social media strategist generating a hashtag set for a
+{{ platform }} {{ post_type }} post from the brand "{{ brand }}".
+
+CAMPAIGN: {{ campaign }}
+TARGET AUDIENCE: {{ audience }}
+CORE TOPICS: {{ keywords | join(", ") }}
+
+Generate a hashtag set optimized for {{ platform }}'s conventions
+(e.g. Instagram supports many tags and benefits from a mix of broad +
+niche; X/Twitter and LinkedIn perform best with 1-3 highly relevant tags;
+adjust the COUNT and STYLE of tags to what actually works on {{ platform }},
+not a one-size-fits-all list).
+
+Produce three tiers:
+1. BROAD REACH (1-3 tags): high-volume, widely-searched tags directly
+   relevant to the core topics — for general discoverability.
+2. NICHE/TARGETED (3-6 tags): more specific tags that this exact
+   {{ audience }} audience is likely to search or follow — lower volume,
+   higher relevance.
+3. BRANDED (1-2 tags): a tag incorporating "{{ brand }}" or the campaign
+   name "{{ campaign }}", for tracking and community-building.
+
+Rules:
+- All tags must be real-looking, properly formatted (no spaces, CamelCase
+  for multi-word tags, all starting with #).
+- Do not repeat a tag across tiers.
+- Do not include generic spam-adjacent tags like #like4like or #follow4follow.
+- Total tag count should match what is idiomatic for {{ platform }} (fewer
+  for LinkedIn/X, more for Instagram/TikTok).
+
+Output format — exactly this structure, nothing else:
+BROAD: <space-separated tags>
+NICHE: <space-separated tags>
+BRANDED: <space-separated tags>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WebStaffr — Investor Brief</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#fff;background:#070b12;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+img,svg,canvas{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+
+:root{
+  --bg:#060b14;
+  --bg-2:#0b1220;
+  --gray:#9aa3b2;
+  --blue:#2563eb;
+  --cyan:#22d3ee;
+  --electric:#3b82f6;
+  --white:#f8fafc;
+  --line:#1f2937;
+  --gold:#fbbf24;
+  --glass: rgba(15,23,42,.45);
+}
+
+.container{width:min(1200px,90vw);margin-inline:auto}
+.section{position:relative;padding:5.5rem 0}
+
+.eyebrow{display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);background:linear-gradient(to right,#22d3ee,#3b82f6);background-clip:text;-webkit-background-clip:text;color:transparent}
+.h1{font-size:clamp(32px,4.6vw,68px);line-height:1.08;font-weight:700;letter-spacing:-.03em}
+.h2{font-size:clamp(24px,3.2vw,46px);line-height:1.12;font-weight:700;letter-spacing:-.02em}
+.h3{font-size:clamp(16px,1.8vw,22px);line-height:1.3;font-weight:600}
+.lead{font-size:clamp(15px,1.2vw,18px);line-height:1.6;color:#cbd5e1;max-width:740px}
+
+.mag{position:relative;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:999px;font-weight:600;font-size:15px}
+.mag.primary{background:linear-gradient(135deg,#2563eb,#06b6d4);border-color:transparent;color:#fff}
+.mag.glass{background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.25));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-color:#334155}
+
+.glass{background:linear-gradient(180deg,rgba(15,23,42,.45),rgba(15,23,42,.25));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(99,102,241,.18);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
+
+.section-hero{background:radial-gradient(1200px 600px at 15% 10%, rgba(34,211,238,.08), transparent),radial-gradient(1000px 600px at 85% 20%, rgba(59,130,246,.08), transparent),linear-gradient(180deg,#060b14,#0b1220,#060b14)}
+.section-metrics{background:radial-gradient(900px 500px at 100% 0%, rgba(59,130,246,.08), transparent),linear-gradient(180deg,#0b1220,#060b14)}
+.section-model{background:linear-gradient(180deg,#060b14,#0b1220)}
+.section-tiers{background:radial-gradient(1000px 400px at 0% 10%, rgba(34,211,238,.06), transparent),linear-gradient(180deg,#060b14,#0b1220)}
+.section-returns{background:linear-gradient(180deg,#0b1220,#060b14)}
+.section-cta{background:radial-gradient(1200px 600px at 50% 20%, rgba(34,211,238,.1), transparent),linear-gradient(180deg,#0b1220,#060b14)}
+
+.grid-4{display:grid;gap:14px;grid-template-columns:repeat(4,1fr)}
+@media(max-width:980px){.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid-4{grid-template-columns:1fr}}
+.metric{padding:18px;border-radius:20px;background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.35));border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.metric .l{color:#94a3b8;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.metric .v{color:#f8fafc;font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+.metric .d{color:#cbd5e1;font-size:13px;margin-top:8px;line-height:1.45}
+
+.chart-wrap{position:relative;margin-top:22px;padding:18px;border-radius:22px;background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.35));border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+canvas.chart{width:100%;height:260px;display:block}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#e2e8f0}
+.legend-dot{width:12px;height:12px;border-radius:999px;box-shadow:0 0 10px currentColor}
+
+.callout{padding:16px;border-radius:16px;background:linear-gradient(180deg,rgba(34,211,238,.12),rgba(59,130,246,.08));border:1px solid rgba(34,211,238,.22);color:#e2e8f0;font-size:14px;line-height:1.55}
+.callout.gold{background:linear-gradient(180deg,rgba(251,191,36,.12),rgba(245,158,11,.08));border-color:rgba(251,191,36,.22)}
+
+.table-wrap{margin-top:18px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;color:#e2e8f0}
+th{text-align:left;color:#94a3b8;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
+td{padding:12px 8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+
+.footer{border-top:1px solid rgba(255,255,255,.07);padding:2rem 0;color:#94a3b8;font-size:13px}
+.footer .container{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.2);color:#e2e8f0;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+
+.small{font-size:12px;color:#94a3b8;line-height:1.5}
+.mt-14{margin-top:14px}
+.mt-20{margin-top:20px}
+.mt-24{margin-top:24px}
+</style>
+</head>
+<body>
+
+<section class="section section-hero">
+  <div class="container">
+    <div class="badge">Confidential</div>
+    <h1 class="h1" style="margin-top:14px">WebStaffr Investor Brief</h1>
+    <p class="lead mt-14" style="max-width:760px">Operational revenue recovery for home service contractors. Live product, tested stack, $150K SAFE cap, two conservative growth paths with a credible accelerated case.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px">
+      <a class="mag primary" href="#model">See the Model</a>
+      <a class="mag glass" href="#returns">Return Scenarios</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-metrics" id="metrics">
+  <div class="container">
+    <span class="eyebrow">Summary Metrics</span>
+    <h2 class="h2" style="margin-top:10px">What an investor can verify today</h2>
+    <p class="lead mt-14">These claims are based on the live product, the current investor summary, and the updated planning assumptions.</p>
+    <div class="grid-4 mt-20">
+      <div class="metric"><div class="l">Listing price</div><div class="v">$497 / $2,497</div><div class="d">Office Staff is the entry point. Business Manager is the monetization tier with the social media manager agent included.</div></div>
+      <div class="metric"><div class="l">Ad spend</div><div class="v">Separate</div><div class="d">Contractor pays ad spend directly to each platform. WebStaffr does not resell media.</div></div>
+      <div class="metric"><div class="l">Gross margin</div><div class="v">~87%</div><div class="d">Current unit economics if the $65 delivery cost holds.</div></div>
+      <div class="metric"><div class="l">Technical status</div><div class="v">Live + tested</div><div class="d">Platform is in production. Automated tests passing.</div></div>
+    </div>
+    <div class="grid-4 mt-14">
+      <div class="metric"><div class="l">TAM</div><div class="v">~$14.6B</div><div class="d">US home service businesses.</div></div>
+      <div class="metric"><div class="l">Beachhead</div><div class="v">Phoenix HVAC</div><div class="d">3 to 15 employees, $500K to $3M revenue.</div></div>
+      <div class="metric"><div class="l">Planning churn</div><div class="v">8% monthly</div><div class="d">Conservative base until real retention data exists.</div></div>
+      <div class="metric"><div class="l">Planning CAC</div><div class="v">Founder-led</div><div class="d">Unproven past the first 50 free builds.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-model" id="model">
+  <div class="container">
+    <span class="eyebrow">Financial Model</span>
+    <h2 class="h2" style="margin-top:10px">Baseline vs Accelerated</h2>
+    <p class="lead mt-14">Two paths. Both are illustrative curve shapes, not monthly forecasts. Real results depend on actual conversion, churn, and acquisition data.</p>
+
+    <div class="chart-wrap">
+      <canvas id="growthChart" class="chart"></canvas>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3ee;color:#22d3ee"></div>Baseline: conservative ramp, 8% churn</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;color:#fbbf24"></div>Accelerated: larger marketing investment</div>
+      </div>
+      <div class="callout mt-14">Baseline Month 12: ~100 customers. Baseline Month 24: ~205 customers / ~$1.22M ARR under conservative inputs.</div>
+      <div class="callout gold mt-14">Accelerated case reaches 245+ customers faster and can scale toward ~350 to 430 customers by Month 24 with materially higher marketing spend, better conversion, and improved retention.</div>
+    </div>
+
+    <div class="grid-4 mt-24">
+      <div class="metric"><div class="l">Baseline</div><div class="v">Month 24</div><div class="d">~205 customers / ~$1.22M ARR</div></div>
+      <div class="metric"><div class="l">Accelerated</div><div class="v">Month 24</div><div class="d">~350 to 430 customers / ~$2.1M to $2.6M ARR</div></div>
+      <div class="metric"><div class="l">Path difference</div><div class="v">Marketing-led</div><div class="d">Higher trial volume + better conversion + lower churn.</div></div>
+      <div class="metric"><div class="l">Status</div><div class="v">Illustrative</div><div class="d">Accelerated scenario is proportional scale-up, not an independent cohort model.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tiers" id="tiers">
+  <div class="container">
+    <span class="eyebrow">Product</span>
+    <h2 class="h2" style="margin-top:10px">Tier Model and Agent Layer</h2>
+    <p class="lead mt-14">Flat pricing, no ad markup, and the social media manager agent is bundled as the operating layer inside Business Manager.</p>
+    <div class="chart-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Price</th><th>What it includes</th><th>Positioning</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Office Staff</strong></td>
+            <td>$497 / month</td>
+            <td>Receptionist, service advisor, lead coordinator, reputation manager, website operations.</td>
+            <td>Primary acquisition entry point. 30-day free trial.</td>
+          </tr>
+          <tr>
+            <td><strong>Business Manager</strong></td>
+            <td>$2,497 / month</td>
+            <td>Everything in Office Staff, plus sales consultant, marketing coordinator, operations manager, and the social media manager agent across Meta and additional platforms.</td>
+            <td>Upgrade tier only. Flat platform fee.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout gold mt-14">Ad spend clarification: the customer pays all ad spend directly to the ad platforms. WebStaffr does not resell media. The agent optimizes toward booked jobs and ROI, not markups.</div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-model" id="churn">
+  <div class="container">
+    <span class="eyebrow">Unit Economics</span>
+    <h2 class="h2" style="margin-top:10px">Churn Sensitivity</h2>
+    <p class="lead mt-14">Conservative planning base first. Aspirational targets second.</p>
+    <div class="chart-wrap">
+      <table>
+        <thead><tr><th>Planning assumption</th><th>Churn</th><th>Net LTV</th><th>LTV:CAC</th><th>Interpretation</th></tr></thead>
+        <tbody>
+          <tr><td>Planning base</td><td>8%</td><td>~$5,400</td><td>~36x</td><td>Use this in near-term investor conversations.</td></tr>
+          <tr><td>Target to earn</td><td>6%</td><td>$7,200</td><td>~48x</td><td>Aspirational. Not yet demonstrated.</td></tr>
+          <tr><td>Stretch</td><td>5%</td><td>$8,640</td><td>~58x</td><td>Elite case. Unproven.</td></tr>
+          <tr><td>Risk case</td><td>10%+</td><td>~$4,320</td><td>Compressed</td><td>Material pressure on unit economics.</td></tr>
+        </tbody>
+      </table>
+      <p class="small mt-14">CAC is treated as unproven past the first 50 free builds. Focus the first trials on cohort data, then validate acquisition channels.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tiers" id="capital">
+  <div class="container">
+    <span class="eyebrow">Use of Funds</span>
+    <h2 class="h2" style="margin-top:10px">Capital Tiers</h2>
+    <p class="lead mt-14">Every milestone is tied to validation, not to assumed unit economics.</p>
+    <div class="grid-4 mt-20">
+      <div class="metric"><div class="l">Minimum</div><div class="v">$10,000</div><div class="d">Legal setup, basic validation, live telephone proving, operational buffer.</div></div>
+      <div class="metric"><div class="l">Target</div><div class="v">$25,000</div><div class="d">ServiceTitan and Jobber integration, automated builds, multi-agent infrastructure.</div></div>
+      <div class="metric"><div class="l">Maximum</div><div class="v">$50,000</div><div class="d">Accelerated Tampa launch, additional founder-led acquisition hire, extended runway.</div></div>
+      <div class="metric"><div class="l">Valuation cap</div><div class="v">$150,000</div><div class="d">Post-money SAFE, 20% discount on next priced round.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-returns" id="returns">
+  <div class="container">
+    <span class="eyebrow">Returns</span>
+    <h2 class="h2" style="margin-top:10px">Illustrative Return Scenarios</h2>
+    <p class="lead mt-14">Based on a $25,000 investment at the $150,000 cap, before dilution from a triggering priced round.</p>
+    <div class="chart-wrap">
+      <table>
+        <thead><tr><th>Trigger valuation</th><th>Investor stake value</th><th>Multiple</th></tr></thead>
+        <tbody>
+          <tr><td>$300,000</td><td>$50,000</td><td>2.0x</td></tr>
+          <tr><td>$500,000</td><td>$83,500</td><td>3.3x</td></tr>
+          <tr><td>$1,000,000</td><td>$167,000</td><td>6.7x</td></tr>
+          <tr><td>$2,000,000</td><td>$334,000</td><td>13.4x</td></tr>
+        </tbody>
+      </table>
+      <p class="small mt-14">These are illustrations, not projections or guarantees of performance. If no trigger event occurs, the agreement remains outstanding indefinitely.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-cta" id="cta">
+  <div class="container" style="text-align:center">
+    <span class="eyebrow">Next Step</span>
+    <h2 class="h2" style="margin-top:10px">Validate the First 50 Trials</h2>
+    <p class="lead mt-14" style="margin:14px auto 0; max-width:760px">The strongest signal for valuation lift is real cohort data: conversion, churn, and retention by vertical. Everything else is illustrative.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px">
+      <a class="mag primary" href="#model">Review the Model</a>
+      <a class="mag glass" href="#metrics">Back to Summary</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div>WebStaffr Executive Document | July 2026 | Contact: K. Michael Tortorich, MD</div>
+    <div style="display:flex;gap:14px"><a href="#top">Back to top</a></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const canvas = document.getElementById('growthChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 260;
+
+  const resize = () => {
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  };
+
+  const months = Array.from({ length: 24 }, (_, i) => i + 1);
+
+  const baseline = months.map((m, idx) => {
+    let active = 0;
+    for (let k = 0; k <= idx; k++) {
+      const trials = k === 0 ? 225 : 115;
+      const newCustomers = trials * 0.10;
+      const churned = active * 0.08;
+      active = active + newCustomers - churned;
+    }
+    return Math.max(0, Math.round(active));
+  });
+
+  const acceleratedBase = months.map((m, idx) => {
+    let active = 0;
+    for (let k = 0; k <= idx; k++) {
+      const trials = k === 0 ? 225 : 180;
+      const newCustomers = trials * 0.12;
+      const churned = active * 0.05;
+      active = active + newCustomers - churned;
+    }
+    return Math.max(0, Math.round(active));
+  });
+
+  const series = [
+    { data: baseline, color: '#22d3ee', label: 'Baseline' },
+    { data: acceleratedBase, color: '#fbbf24', label: 'Accelerated' },
+  ];
+
+  const draw = () => {
+    ctx.clearRect(0, 0, W, H);
+    const pad = { top: 28, right: 28, bottom: 44, left: 56 };
+    const chartW = W - pad.left - pad.right;
+    const chartH = H - pad.top - pad.bottom;
+
+    const maxVal = Math.max(...series.map(s => Math.max(...s.data))) * 1.08;
+    const xOf = (i) => pad.left + (i / (months.length - 1)) * chartW;
+    const yOf = (v) => pad.top + chartH - (v / maxVal) * chartH;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.top + (chartH * i) / 4;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, y);
+      ctx.lineTo(pad.left + chartW, y);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px Inter, sans-serif';
+    [0, 6, 12, 18, 24].forEach((m, i) => {
+      const x = xOf(m - 1);
+      ctx.fillText('Month ' + m, x - 14, H - 16);
+    });
+
+    for (let i = 0; i <= 4; i++) {
+      const val = Math.round((maxVal * (4 - i)) / 4);
+      const y = yOf(val);
+      ctx.fillText(val.toString(), 8, y + 4);
+    }
+
+    series.forEach((s) => {
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      s.data.forEach((v, i) => {
+        const x = xOf(i);
+        const y = yOf(v);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      ctx.fillStyle = s.color;
+      s.data.forEach((v, i) => {
+        const x = xOf(i);
+        const y = yOf(v);
+        ctx.beginPath();
+        ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    });
+
+    const pointMonth = [11, 12, 23];
+    const note = [
+      '~100 customers',
+      'Baseline: ~100',
+      'Baseline: ~205, ~$1.22M ARR'
+    ];
+    series[0].data.forEach((v, i) => {
+      if (!pointMonth.includes(i)) return;
+      const x = xOf(i);
+      const y = yOf(v);
+      ctx.fillStyle = 'rgba(34,211,238,.08)';
+      ctx.strokeStyle = 'rgba(34,211,238,.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x - 64, y - 28, 128, 24, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText(note[pointMonth.indexOf(i)], x - 60, y - 11);
+    });
+  };
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
+</script>
+
+</body>
+</html>

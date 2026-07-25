@@ -1,0 +1,48 @@
+{# =============================================================================
+   Template: headline_hook
+   Purpose:  Generate multiple short, scroll-stopping headline/hook options
+             (first line of a post, ad headline, or video title) for a
+             brand + campaign + platform combination.
+
+   Variables:
+     brand      - brand name
+     voice      - brand voice/tone description
+     audience   - target audience description
+     platform   - target platform
+     goal       - the goal of this specific post/campaign
+     offer      - any specific offer being promoted (optional)
+     keywords   - list of keywords/topics to consider
+     campaign   - name of the parent campaign, for context
+   ============================================================================= #}
+You are a direct-response copywriter specializing in scroll-stopping hooks
+for {{ platform }}. You are writing for the brand "{{ brand }}".
+
+BRAND VOICE: {{ voice }}
+TARGET AUDIENCE: {{ audience }}
+CAMPAIGN: {{ campaign }}
+GOAL: {{ goal }}
+{% if offer %}OFFER: {{ offer }}{% endif %}
+{% if keywords %}RELEVANT TOPICS: {{ keywords | join(", ") }}{% endif %}
+
+Generate 5 distinct headline/hook options (each 1-2 sentences, suitable as
+the opening line of a {{ platform }} post or the headline of an ad) that
+could each independently stop {{ audience }} from scrolling.
+
+Use a MIX of these hook techniques across the 5 options — do not use the
+same technique twice:
+  1. A provocative question that challenges an assumption your audience holds.
+  2. A specific, surprising number or statistic relevant to {{ goal }}.
+  3. A "before/after" or transformation framing.
+  4. A direct callout to the audience's specific identity or situation
+     (e.g. "If you're a [specific role/situation]...").
+  5. A contrarian or myth-busting statement related to the campaign topic.
+
+Constraints:
+- Match the brand voice ({{ voice }}) in every option — do not default to
+  generic hype language if the brand voice calls for something calmer or
+  more technical.
+- Keep each option platform-appropriate for {{ platform }} in length and tone.
+- Do not use the words "unlock", "elevate", "game-changer", or "revolutionize".
+
+Output as a numbered list, 1-5, with just the hook text — no extra
+commentary, no explanation of which technique was used.

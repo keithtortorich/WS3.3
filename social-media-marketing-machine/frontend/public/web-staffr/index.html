@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WebStaffr — AI Operating System for Home Service Businesses</title>
+<meta name="description" content="WebStaffr provides AI employees for home service business. AI Receptionists, Dispatchers, Marketing Managers, and Customer Service agents that work 24/7." />
+<style>
+/* ---------- Reset & Base ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#fff;background:#070b12;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+img,svg,canvas{display:block;max-width:100%}
+input,button,textarea{font:inherit;color:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ---------- Tokens ---------- */
+:root{
+  --bg:#060b14;
+  --bg-2:#0b1220;
+  --gray:#9aa3b2;
+  --blue:#2563eb;
+  --cyan:#22d3ee;
+  --electric:#3b82f6;
+  --white:#f8fafc;
+  --line:#1f2937;
+}
+
+/* ---------- Utilities ---------- */
+.container{width:min(1200px,90vw);margin-inline:auto}
+.section{position:relative;padding:6rem 0}
+.eyebrow{display:inline-block;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);background:linear-gradient(to right,#22d3ee,#3b82f6);background-clip:text;-webkit-background-clip:text;color:transparent}
+.h1{font-size:clamp(34px,5vw,80px);line-height:1.05;font-weight:700;letter-spacing:-.03em}
+.h2{font-size:clamp(26px,3.5vw,52px);line-height:1.1;font-weight:700;letter-spacing:-.02em}
+.h3{font-size:clamp(18px,2vw,24px);line-height:1.3;font-weight:600}
+.lead{font-size:clamp(16px,1.3vw,20px);line-height:1.6;color:#cbd5e1;max-width:740px}
+
+/* ---------- Magnetic button ---------- */
+.mag{position:relative;display:inline-flex;align-items:center;gap:10px;padding:14px 22px;background:#0f172a;color:#fff;border:1px solid #334155;border-radius:999px;font-weight:600;font-size:15px;transition:transform .25s cubic-bezier(.3,.9,.3,1),background .25s,border-color .25s}
+.mag:hover{background:#1e293b;border-color:#475569}
+.mag.primary{background:linear-gradient(135deg,#2563eb,#06b6d4);border-color:transparent;color:#fff}
+.mag.primary:hover{filter:brightness(1.08)}
+.mag.glass{background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.25));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-color:#334155}
+.mag::after{content:"";position:absolute;inset:-16px;border-radius:999px;pointer-events:none}
+
+/* ---------- Glass card ---------- */
+.glass{background:linear-gradient(180deg,rgba(15,23,42,.45),rgba(15,23,42,.25));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(99,102,241,.18);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
+
+/* ---------- Nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:40;border-bottom:1px solid rgba(255,255,255,.05);background:linear-gradient(180deg,rgba(6,11,20,.8),rgba(6,11,20,.45));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav .container{display:flex;align-items:center;justify-content:space-between;padding-block:14px}
+.nav-logo{font-weight:700;letter-spacing:.02em;font-size:18px}
+.nav-logo span{background:linear-gradient(to right,#22d3ee,#3b82f6);background-clip:text;-webkit-background-clip:text;color:transparent}
+.nav-actions{display:flex;align-items:center;gap:12px}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;overflow:hidden;padding-top:110px;padding-bottom:80px;background:
+ radial-gradient(1200px 600px at 15% 10%, rgba(34,211,238,.08), transparent),
+ radial-gradient(1000px 600px at 85% 20%, rgba(59,130,246,.08), transparent),
+ linear-gradient(180deg,#060b14,#0b1220,#060b14)}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .content{position:relative;z-index:10}
+
+/* ---------- AI employees ---------- */
+.ai-wrap{position:relative;z-index:11;display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.ai-wrap{grid-template-columns:1fr}}
+.ai{position:relative;padding:16px 14px 14px;cursor:pointer;will-change:transform,filter;touch-action:none;border-radius:18px;transition:background .35s,border .35s;border:1px solid transparent;background:transparent}
+.ai:hover,.ai.active{background:linear-gradient(180deg,rgba(15,23,42,.6),rgba(15,23,42,.3));border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.ai .icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#0ea5e9,#3b82f6);margin-bottom:10px;box-shadow:0 10px 30px rgba(59,130,246,.35)}
+.ai .title{font-weight:700;font-size:16px;letter-spacing:.02em}
+.ai .desc{color:#cbd5e1;font-size:14px;line-height:1.5}
+.ai .meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px;color:#94a3b8;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+
+/* ---------- expanded card panel ---------- */
+.card-panel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);z-index:50;width:min(980px,92vw);padding:22px;border-radius:24px;background:linear-gradient(180deg,rgba(15,23,42,.65),rgba(15,23,42,.45));backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 90px rgba(2,6,23,.55),inset 0 1px 0 rgba(255,255,255,.06);opacity:0;pointer-events:none;will-change:transform,opacity;transition:opacity .3s,transform .4s cubic-bezier(.2,.8,.2,1)}
+.card-panel.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.card-panel .close{position:absolute;right:18px;top:18px;width:34px;height:34px;border-radius:999px;border:1px solid #334155;background:#0b1220;color:#f8fafc;display:grid;place-items:center;font-size:18px}
+.card-panel h3{font-size:26px;font-weight:700;margin:0 0 10px}
+.card-grid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.card-grid{grid-template-columns:1fr}}
+.card-k{background:linear-gradient(180deg,rgba(15,23,42,.5),rgba(15,23,42,.3));border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+.card-k .l{color:#94a3b8;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.card-k .v{color:#f8fafc;font-size:20px;font-weight:700;margin-top:6px}
+
+/* ---------- simulation ---------- */
+.sim{position:fixed;left:16px;bottom:16px;z-index:40;padding:12px 14px;border-radius:14px;background:linear-gradient(180deg,rgba(15,23,42,.5),rgba(15,23,42,.35));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.07);color:#e2e8f0;width:260px}
+.sim .t{font-size:10px;color:#94a3b8;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+.sim .line{height:6px;display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#cbd5e1}
+.sim .dot{width:8px;height:8px;border-radius:999px;background:#22d3ee;box-shadow:0 0 12px #22d3ee}
+
+/* ---------- sections ---------- */
+.section-video{background:
+  radial-gradient(1000px 400px at 0% 10%, rgba(34,211,238,.06), transparent),
+  linear-gradient(180deg,#060b14,#0b1220)}
+.section-stats{background:
+  radial-gradient(900px 500px at 100% 0%, rgba(59,130,246,.08), transparent),
+  linear-gradient(180deg,#0b1220,#060b14)}
+.section-workers{background:linear-gradient(180deg,#060b14,#0b1220)}
+.section-workflow{background:
+  radial-gradient(1000px 500px at 0% 100%, rgba(6,182,212,.06), transparent),
+  linear-gradient(180deg,#0b1220,#060b14)}
+.section-optimization{background:linear-gradient(180deg,#060b14,#0b1220)}
+.section-dashboard{background:
+  radial-gradient(1000px 500px at 100% 0%, rgba(34,211,238,.06), transparent),
+  linear-gradient(180deg,#0b1220,#060b14)}
+.section-testimonials{background:linear-gradient(180deg,#060b14,#0b1220)}
+.section-cta{background:
+  radial-gradient(1200px 600px at 50% 20%, rgba(34,211,238,.1), transparent),
+  linear-gradient(180deg,#0b1220,#060b14)}
+
+/* ---------- workflow ---------- */
+.workflow{display:flex;flex-wrap:wrap;gap:0}
+.wf{display:flex;align-items:center;gap:16px}
+.wf .node{width:110px;padding:14px;border-radius:16px;background:rgba(15,23,42,.55);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.wf .arrow{color:#64748b;font-weight:700}
+
+/* ---------- optimization loop ---------- */
+.loop{display:grid;gap:14px;grid-template-columns:repeat(5,1fr)}
+@media(max-width:860px){.loop{grid-template-columns:1fr}}
+.loop .step{position:relative;padding:14px;border-radius:16px;background:rgba(15,23,42,.55);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);text-align:center;transition:transform .35s,border-color .35s}
+.loop .step:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.35)}
+.loop .step .n{color:#22d3ee;font-weight:700;font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+.loop .step .name{font-weight:700;font-size:18px;margin-top:8px}
+
+/* ---------- dashboard ---------- */
+.grid-cols{display:grid;gap:14px;grid-template-columns:repeat(6,1fr)}
+@media(max-width:980px){.grid-cols{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.grid-cols{grid-template-columns:1fr}}
+.stat{position:relative;overflow:hidden;padding:18px;border-radius:20px;background:linear-gradient(180deg,rgba(15,23,42,.55),rgba(15,23,42,.35));border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.stat::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);pointer-events:none}
+.stat .l{color:#94a3b8;font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+.stat .v{color:#f8fafc;font-size:28px;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+
+/* ---------- testimonials ---------- */
+.grid-3{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:860px){.grid-3{grid-template-columns:1fr}}
+.tcard{padding:18px;border-radius:20px;background:linear-gradient(180deg,rgba(15,23,42,.5),rgba(15,23,42,.35));border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.tcard .q{color:#e2e8f0;font-size:15px;line-height:1.6;font-style:italic}
+.tcard .by{color:#94a3b8;font-size:12px;margin-top:10px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ---------- footer ---------- */
+.footer{border-top:1px solid rgba(255,255,255,.07);padding:2rem 0;color:#94a3b8;font-size:13px}
+.footer .container{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+
+/* ---------- task updating ---------- */
+.sim-line{transition:opacity .35s}
+.workflow-line, .workflow-pulse{transition:transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s}
+.stat-v{font-variant-numeric:tabular-nums}
+
+/* ---------- scroll reveal ---------- */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .8s, transform .9s cubic-bezier(.3,.9,.3,1)}
+.reveal.in{opacity:1;transform:none}
+
+
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<header class="nav">
+  <div class="container">
+    <div class="nav-logo">Web<span>Staffr</span></div>
+    <div class="nav-actions">
+      <a class="mag" href="#features">How It Works</a>
+      <a class="mag primary" href="#book">Book Demo</a>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero" id="top">
+  <canvas id="particles"></canvas>
+  <div class="content container">
+    <div class="reveal" style="max-width:760px">
+      <span class="eyebrow">Home Service Operating System</span>
+      <h1 class="h1" style="margin-top:14px">
+        Your Office.<br/>Fully Staffed.<br/><span style="background:linear-gradient(135deg,#22d3ee,#3b82f6);background-clip:text;-webkit-background-clip:text;color:transparent">Powered by AI.</span>
+      </h1>
+      <p class="lead" style="margin-top:18px">Never miss another call. Never lose another lead. WebStaffr provides AI Receptionists, Dispatchers, Marketing Managers, and Customer Service agents that work 24/7.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+        <a class="mag primary" href="#book">Book a Demo</a>
+        <a class="mag glass" href="#features">See How It Works</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Floating AI Employees -->
+<section class="section section-workers">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Your AI Department</span>
+      <h2 class="h2" style="margin-top:10px">Meet Your AI Team</h2>
+      <p class="lead" style="margin-top:10px">Click an employee to explore their responsibilities, automations, KPIs, and the revenue they protect for your business.</p>
+    </div>
+    <div class="ai-wrap reveal" style="margin-top:26px" id="aiTeam">
+      <article class="ai" data-ai="receptionist">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a12 12 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div class="title">AI Receptionist</div>
+        <div class="desc">Answers every call within one ring, qualifies leads, books jobs, and routes emergencies.</div>
+        <div class="meta"><span>Language: 12+</span><span>24 / 7</span></div>
+      </article>
+      <article class="ai" data-ai="dispatcher">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20z"/><path d="M2 12h20"/></svg></div>
+        <div class="title">Dispatcher</div>
+        <div class="desc">Routes jobs by technician, time windows, zone, priority, and SLA constraints.</div>
+        <div class="meta"><span>SLA aware</span><span>Live</span></div>
+      </article>
+      <article class="ai" data-ai="marketing">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg></div>
+        <div class="title">Marketing Director</div>
+        <div class="desc">Optimizes campaigns, creative, and budget allocation across channels.</div>
+        <div class="meta"><span>ROI Optimized</span><span>Auto</span></div>
+      </article>
+      <article class="ai" data-ai="csr">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8A8.5 8.5 0 0 1 3.5 11 8.38 8.38 0 0 1 4.4 7.2a8.5 8.5 0 0 1 15.1 1.3z"/><path d="M16 15.5a3.5 3.5 0 0 0-4.16-1.59 3.5 3.5 0 0 0-4.7 2.15 3.5 3.5 0 0 0-.05 4.75"/></svg></div>
+        <div class="title">CSR</div>
+        <div class="desc">Handles confirmations, status updates, and win-back conversations.</div>
+        <div class="meta"><span>Sentiment aware</span><span>24 / 7</span></div>
+      </article>
+      <article class="ai" data-ai="sales">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01z"/></svg></div>
+        <div class="title">Sales Assistant</div>
+        <div class="desc">Presents options, handles upsells, and closes compliant confirmation.</div>
+        <div class="meta"><span>Conversion</span><span>Smart</span></div>
+      </article>
+      <article class="ai" data-ai="reviews">
+        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="title">Review Manager</div>
+        <div class="desc">Requests reviews at the moment of surprise, protects online reputation.</div>
+        <div class="meta"><span>Reputation</span><span>Auto</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Stats section -->
+<section class="section section-stats">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Financial Impact</span>
+      <h2 class="h2" style="margin-top:10px">The Cost of Missed Calls</h2>
+      <p class="lead" style="margin-top:10px">A single missed call can cost a service business hundreds in job value. Multiply that by every silent lead.</p>
+    </div>
+    <div class="grid-3 reveal" style="margin-top:24px">
+      <article class="glass" style="padding:18px">
+        <div class="h3">$4.8B</div>
+        <p class="lead" style="margin:10px 0 0;font-size:15px">Annual lost revenue from missed calls across home services.</p>
+      </article>
+      <article class="glass" style="padding:18px">
+        <div class="h3">70%</div>
+        <p class="lead" style="margin:10px 0 0;font-size:15px">Of callers who reach voicemail will not call back.</p>
+      </article>
+      <article class="glass" style="padding:18px">
+        <div class="h3">3x</div>
+        <p class="lead" style="margin:10px 0 0;font-size:15px">More representative in five seconds than a callback hours later.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Workflow -->
+<section class="section section-workflow" id="features">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">System Design</span>
+      <h2 class="h2" style="margin-top:10px">How WebStaffr Works</h2>
+      <p class="lead" style="margin-top:10px">Each customer interaction moves through a smart pipeline from first ring to revenue.</p>
+    </div>
+    <div class="workflow reveal" style="margin-top:24px">
+      <div class="wf">
+        <div class="node"><div class="h3" style="font-size:16px">Customer</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">AI Receptionist</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">Qualification</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">Booking</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">Dispatch</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">Notification</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><div class="h3" style="font-size:16px">Revenue</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Optimization loop -->
+<section class="section section-optimization">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Continuous Improvement</span>
+      <h2 class="h2" style="margin-top:10px">Continuous Optimization</h2>
+      <p class="lead" style="margin-top:10px">WebStaffr improves every night through an engineering feedback loop designed for growth.</p>
+    </div>
+    <div class="loop reveal" style="margin-top:24px">
+      <div class="step"><div class="n">01 / 05</div><div class="name">Observe</div><p style="color:#cbd5e1;font-size:13px;margin-top:8px">Collects every call, message, and result across channels.</p></div>
+      <div class="step"><div class="n">02 / 05</div><div class="name">Analyze</div><p style="color:#cbd5e1;font-size:13px;margin-top:8px">Identifies leaks, bottlenecks, and conversion delays.</p></div>
+      <div class="step"><div class="n">03 / 05</div><div class="name">Improve</div><p style="color:#cbd5e1;font-size:13px;margin-top:8px">Updates scripts, timing, and outcomes in production.</p></div>
+      <div class="step"><div class="n">04 / 05</div><div class="name">Measure</div><p style="color:#cbd5e1;font-size:13px;margin-top:8px">Validates wins against revenue and SLA metrics.</p></div>
+      <div class="step"><div class="n">05 / 05</div><div class="name">Repeat</div><p style="color:#cbd5e1;font-size:13px;margin-top:8px">Learns nightly and compounds into stronger performance.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- Dashboard -->
+<section class="section section-dashboard">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Live Metrics</span>
+      <h2 class="h2" style="margin-top:10px">Performance Dashboard</h2>
+      <p class="lead" style="margin-top:10px">Real operational indicators measured at the boundary of customer experience and office execution.</p>
+    </div>
+    <div class="grid-cols reveal" style="margin-top:24px">
+      <article class="stat"><div class="l">Calls Answered</div><div class="v stat-v" data-count="1248">0</div></article>
+      <article class="stat"><div class="l">Bookings Today</div><div class="v stat-v" data-count="67">0</div></article>
+      <article class="stat"><div class="l">Revenue Protected</div><div class="v stat-v" data-count="9820" data-prefix="$">$0</div></article>
+      <article class="stat"><div class="l">AI Tasks Completed</div><div class="v stat-v" data-count="4320">0</div></article>
+      <article class="stat"><div class="l">Missed Calls Saved</div><div class="v stat-v" data-count="314">0</div></article>
+      <article class="stat"><div class="l">Customer Satisfaction</div><div class="v stat-v" data-count="98" data-suffix="%">0%</div></article>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="section section-testimonials">
+  <div class="container">
+    <div class="reveal">
+      <span class="eyebrow">Customers</span>
+      <h2 class="h2" style="margin-top:10px">Trusted by Home Service Operators</h2>
+    </div>
+    <div class="grid-3 reveal" style="margin-top:24px">
+      <article class="tcard"><div class="q">"We recovered over 150 leads in month one. Calls were the biggest leak."</div><div class="by">HVAC Owner, Texas</div></article>
+      <article class="tcard"><div class="q">"Dispatch used to be chaos. WebStaffr turned scheduling into a system."</div><div class="by">Plumbing Group, Arizona</div></article>
+      <article class="tcard"><div class="q">"Marketing spend felt like guessing. Now we optimize toward outcomes every week."</div><div class="by">Electrical Services, Florida</div></article>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="section section-cta" id="book">
+  <div class="container" style="text-align:center">
+    <div class="reveal">
+      <h2 class="h2">Hire Your First AI Employee Today</h2>
+      <p class="lead" style="margin:14px auto 0">See the AI workforce in action with a live walkthrough tailored to your business.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px">
+        <a class="mag primary" href="https://calendly.com" target="_blank" rel="noopener">Book My Demo</a>
+        <a class="mag glass" href="#top">Back to Top</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div>WebStaffr. All rights reserved.</div>
+    <div style="display:flex;gap:14px">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Expanded employee card -->
+<div class="card-panel" id="cardPanel">
+  <button class="close" id="cardClose" aria-label="Close">×</button>
+  <h3 id="cardTitle">AI Employee</h3>
+  <div class="card-grid" id="cardGrid"></div>
+</div>
+
+<!-- Live simulation -->
+<div class="sim" id="sim">
+  <div class="t">Live Business Simulation</div>
+  <div class="line"><div class="dot"></div><div id="simLine">Phone ringing...</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  // ---------------- Utilities ----------------
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const fmt = (n) => n.toLocaleString('en-US');
+
+  // ---------------- Canvas particles ----------------
+  const canvas = document.getElementById('particles');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+  const resize = () => {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width;
+    H = rect.height;
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+  };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const ctx = canvas.getContext('2d');
+
+  // Network nodes behind hero
+  const nodes = Array.from({ length: 70 }, () => ({
+    x: Math.random() * 1,
+    y: Math.random() * 1,
+    r: Math.random() * 1.4 + 0.4,
+    dx: (Math.random() - 0.5) * 0.0003,
+    dy: (Math.random() - 0.5) * 0.0003,
+  }));
+  for (let i = 0; i < 70; i++) {
+    nodes.push({
+      x: Math.random() * 1,
+      y: Math.random() * 1,
+      r: Math.random() * 1.4 + 0.4,
+      dx: (Math.random() - 0.5) * 0.0003,
+      dy: (Math.random() - 0.5) * 0.0003,
+    });
+  }
+
+  // Abstraction labels: flows
+  const abstractions = [
+    { label: 'Call', color: '#22d3ee', x: 0.15, y: 0.25, sx: 0.0004, sy: 0.0002 },
+    { label: 'Calendar', color: '#3b82f6', x: 0.78, y: 0.2, sx: -0.0003, sy: 0.0003 },
+    { label: 'Message', color: '#a78bfa', x: 0.2, y: 0.65, sx: 0.00035, sy: -0.00015 },
+    { label: 'Workflow', color: '#34d399', x: 0.8, y: 0.6, sx: -0.00025, sy: -0.0001 },
+    { label: 'Schedule', color: '#f59e0b', x: 0.6, y: 0.15, sx: -0.0001, sy: 0.0004 },
+    { label: 'Revenue', color: '#f472b6', x: 0.65, y: 0.78, sx: -0.00035, sy: -0.0002 },
+  ];
+
+
+  const absObjs = abstractions.map((a) => ({
+    ...a,
+    tx: W * a.x,
+    ty: H * a.y,
+    vx: (Math.random() - 0.5) * 1.8,
+    vy: (Math.random() - 0.5) * 1.8,
+  }));
+
+  // Main flow lines toward center
+  const flowPoints = Array.from({ length: 24 }, () => ({
+    t1x: Math.random() * 1,
+    t1y: Math.random() * 1,
+    t2x: 0.5 + (Math.random() - 0.5) * 0.05,
+    t2y: 0.45 + (Math.random() - 0.5) * 0.05,
+    speed: Math.random() * 0.0018 + 0.0006,
+    offset: Math.random(),
+    width: Math.random() * 0.9 + 0.4,
+  }));
+
+  const draw = () => {
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    // deep cinematic gradient
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#060b14');
+    bg.addColorStop(1, '#0b1220');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // motion loops for abstractions
+    for (let i = 0; i < absObjs.length; i++) {
+      const a = absObjs[i];
+      a.tx += a.vx;
+      a.ty += a.vy;
+      if (a.tx < 40 || a.tx > W - 40) a.vx *= -1;
+      if (a.ty < 40 || a.ty > H - 40) a.vy *= -1;
+
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      ctx.strokeStyle = a.color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(a.tx, a.ty);
+      ctx.lineTo(W * 0.5, H * 0.45);
+      ctx.stroke();
+
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = '#020617';
+      ctx.strokeStyle = a.color;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      const ox = Math.cos(i) * 14;
+      ctx.moveTo(a.tx - 18 + ox, a.ty - 14);
+      ctx.lineTo(a.tx + 22 + ox, a.ty - 14);
+      ctx.lineTo(a.tx + 22 + ox, a.ty + 14);
+      ctx.lineTo(a.tx - 18 + ox, a.ty + 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = a.color;
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText(a.label, a.tx - 14, a.ty - 18);
+      ctx.restore();
+    }
+
+    // node connections
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.x += n.dx;
+      n.y += n.dy;
+      if (n.x < 0 || n.x > 1) n.dx *= -1;
+      if (n.y < 0 || n.y > 1) n.dy *= -1;
+
+      const px = n.x * W;
+      const py = n.y * H;
+      ctx.fillStyle = 'rgba(148,163,184,0.35)';
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(0.8, n.r), 0, 6.283);
+      ctx.fill();
+    }
+
+    // volumetric light beam
+    const beam = ctx.createLinearGradient(0, 0, W, H);
+    beam.addColorStop(0, 'rgba(34,211,238,0.05)');
+    beam.addColorStop(1, 'rgba(59,130,246,0.04)');
+    ctx.fillStyle = beam;
+    ctx.fillRect(0, 0, W, H);
+
+    // flow lines
+    for (let i = 0; i < flowPoints.length; i++) {
+      const f = flowPoints[i];
+      f.offset += f.speed;
+      if (f.offset > 1) f.offset = 0;
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = Math.max(0.6, f.width);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      const sx = lerp(f.t1x * W, f.t2x * W, f.offset);
+      const sy = lerp(f.t1y * H, f.t2y * H, f.offset);
+      ctx.moveTo(f.t1x * W, f.t1y * H);
+      ctx.quadraticCurveTo(W * 0.5, H * 0.35, sx, sy);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  let raf = 0;
+  let visible = !document.hidden;
+  document.addEventListener('visibilitychange', () => {
+    visible = !document.hidden;
+    if (visible) loop();
+  });
+
+  const loop = () => {
+    draw();
+    raf = requestAnimationFrame(loop);
+  };
+  loop();
+
+  // ---------------- GSAP stagers ----------------
+  if (window.gsap) {
+    window.gsap.fromTo('.reveal', { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.18, scrollTrigger: { trigger: 'body', start: 'top top', once: true } });
+    // fallback for scrollTrigger if ScrollTrigger isn't included: use in-view reveal via observe
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // ---------------- Magnetic buttons ----------------
+  const mags = document.querySelectorAll('.mag');
+  const magnetic = (el, e) => {
+    const r = el.getBoundingClientRect();
+    const x = e.clientX - (r.left + r.width / 2);
+    const y = e.clientY - (r.top + r.height / 2);
+    el.style.transform = `translate(${x * 0.02}px, ${y * 0.02}px)`;
+  };
+  const reset = (el) => { el.style.transform = 'translate(0,0)'; };
+  for (let i = 0; i < mags.length; i++) {
+    const el = mags[i];
+    el.addEventListener('pointermove', (ev) => magnetic(el, ev));
+    el.addEventListener('pointerleave', () => reset(el));
+  }
+
+  // ---------------- AI employee spring physics ----------------
+  const aiBoxes = Array.from(document.querySelectorAll('.ai'));
+  const pos = aiBoxes.map(() => ({ x: 0, y: 0, tx: 0, ty: 0 }));
+  const pointer = { x: -9999, y: -9999 };
+
+  const setPointer = (x, y) => {
+    pointer.x = x;
+    pointer.y = y;
+  };
+
+  window.addEventListener('pointermove', (e) => setPointer(e.clientX, e.clientY), { passive: true });
+  window.addEventListener('pointerleave', () => setPointer(-9999, -9999));
+
+  const updateSprings = () => {
+    for (let i = 0; i < aiBoxes.length; i++) {
+      const el = aiBoxes[i];
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const dx = pointer.x - cx;
+      const dy = pointer.y - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      const maxD = 320;
+      const factor = Math.max(0, 1 - dist / maxD);
+      const k = 0.12;
+      const damp = 0.78;
+      pos[i].tx = dx * factor * 0.12;
+      pos[i].ty = dy * factor * 0.12;
+      pos[i].x = lerp(pos[i].x, pos[i].tx, k) + (pos[i].x - (pos[i].x - pos[i].tx)) * damp;
+      pos[i].y = lerp(pos[i].y, pos[i].ty, k) + (pos[i].y - (pos[i].y - pos[i].ty)) * damp;
+      el.style.transform = `translate3d(${pos[i].x.toFixed(2)}px,${pos[i].y.toFixed(2)}px,0)`;
+    }
+    requestAnimationFrame(updateSprings);
+  };
+  requestAnimationFrame(updateSprings);
+
+  // ---------------- Employee cards ----------------
+  const cards = {
+    receptionist: {
+      title: 'AI Receptionist',
+      grid: [
+        { l: 'Responsibilities', v: '24 / 7 call answering, qualification, booking.' },
+        { l: 'Automations', v: 'SMS follow-up and calendar confirmation.' },
+        { l: 'KPI', v: 'Answer within 1 ring, booking rate +38%.' },
+        { l: 'Value', v: 'Recovers caller intent before disputes.' },
+        { l: 'Channels', v: 'Voice, SMS, chat, email.' },
+        { l: 'Status', v: 'Active on 4 channels per account.' },
+      ]
+    },
+    dispatcher: {
+      title: 'Dispatcher',
+      grid: [
+        { l: 'Responsibilities', v: 'Routes by technician, time window, SLA.' },
+        { l: 'Automations', v: 'Slot optimization and ETAs to customer.' },
+        { l: 'KPI', v: 'On-time start rate +22% average.' },
+        { l: 'Value', v: 'Decrease travel waste and delays.' },
+        { l: 'Channels', v: 'Dispatch board, SMS, CRM update.' },
+        { l: 'Status', v: 'Integrates with office automation.' },
+      ]
+    },
+    marketing: {
+      title: 'Marketing Director',
+      grid: [
+        { l: 'Responsibilities', v: 'Channel mix, creative rotation, budget pacing.' },
+        { l: 'Automations', v: 'A/B wins rollout and spend allocation.' },
+        { l: 'KPI', v: 'Lower cost per lead and improve close rate.' },
+        { l: 'Value', v: 'Scalable acquisition without guesswork.' },
+        { l: 'Channels', v: 'Google, Facebook, review sites.' },
+        { l: 'Status', v: 'Active daily optimization loop.' },
+      ]
+    },
+    csr: {
+      title: 'CSR',
+      grid: [
+        { l: 'Responsibilities', v: 'Confirms appointments and manages communications.' },
+        { l: 'Automations', v: 'Reminders, window checks, confirmations.' },
+        { l: 'KPI', v: 'Lower no-show rate, higher NPS.' },
+        { l: 'Value', v: 'Customer service staffed permanently.' },
+        { l: 'Channels', v: 'SMS, email, chat support.' },
+        { l: 'Status', v: 'Operates 24 / 7 on holidays.' },
+      ]
+    },
+    sales: {
+      title: 'Sales Assistant',
+      grid: [
+        { l: 'Responsibilities', v: 'Offers options, upsells, and closes confirmations.' },
+        { l: 'Automations', v: 'Revenue-maximizing acceptance scripts.' },
+        { l: 'KPI', v: 'Average job value increase and close improvement.' },
+        { l: 'Value', v: 'Higher revenue from every qualified call.' },
+        { l: 'Channels', v: 'Phone, SMS, checkout.' },
+        { l: 'Status', v: 'Trained on offer library.' },
+      ]
+    },
+    reviews: {
+      title: 'Review Manager',
+      grid: [
+        { l: 'Responsibilities', v: 'Requests reviews and monitors reputation signals.' },
+        { l: 'Automations', v: 'Timed outreach after completed appointments.' },
+        { l: 'KPI', v: 'Review volume increase and response speed.' },
+        { l: 'Value', v: 'Defends brand value against competitor attrition.' },
+        { l: 'Channels', v: 'Google, Yelp, Facebook, industry sites.' },
+        { l: 'Status', v: 'Continuous monitoring operational.' },
+      ]
+    },
+  };
+
+  const cardPanel = document.getElementById('cardPanel');
+  const cardTitle = document.getElementById('cardTitle');
+  const cardGrid = document.getElementById('cardGrid');
+  const cardClose = document.getElementById('cardClose');
+
+  const openCard = (key) => {
+    const data = cards[key];
+    if (!data) return;
+    cardTitle.textContent = data.title;
+    cardGrid.innerHTML = '';
+    (data.grid || []).forEach((c) => {
+      const d = document.createElement('div');
+      d.className = 'card-k';
+      d.innerHTML = `<div class="l">${c.l}</div><div class="v">${c.v}</div>`;
+      cardGrid.appendChild(d);
+    });
+    cardPanel.classList.add('open');
+  };
+  const closeCard = () => cardPanel.classList.remove('open');
+  cardClose.addEventListener('click', closeCard);
+
+  aiBoxes.forEach((el) => {
+    el.addEventListener('click', () => openCard(el.getAttribute('data-ai')));
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCard(); });
+
+  // ---------------- Live business simulation ----------------
+  const simLine = document.getElementById('simLine');
+  const simStates = [
+    'Phone ringing...',
+    'AI answers...',
+    'Lead qualified...',
+    'Appointment booked...',
+    'Calendar updated...',
+    'Dispatcher notified...',
+    'SMS confirmation sent...',
+    'Invoice generated...',
+    'Review requested...',
+    'Dashboard updated...',
+  ];
+  let simIdx = 0;
+  setInterval(() => {
+    simIdx = (simIdx + 1) % simStates.length;
+    simLine.style.opacity = '0';
+    setTimeout(() => {
+      simLine.textContent = simStates[simIdx];
+      simLine.style.opacity = '1';
+    }, 320);
+  }, 1600);
+
+  // ---------------- Dashboard counters ----------------
+  const stats = Array.from(document.querySelectorAll('.stat-v'));
+  const ioStats = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      const target = parseInt(el.getAttribute('data-count'), 10) || 0;
+      const prefix = el.getAttribute('data-prefix') || '';
+      const suffix = el.getAttribute('data-suffix') || '';
+      let start = 0;
+      const dur = 1800;
+      const startTime = performance.now();
+      const step = (now) => {
+        const p = Math.min(1, (now - startTime) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        start = target * eased;
+        el.textContent = prefix + Math.round(start).toLocaleString('en-US') + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      ioStats.unobserve(el);
+    });
+  }, { threshold: 0.3 });
+  stats.forEach((el) => ioStats.observe(el));
+})();
+</script>
+</body>
+</html>

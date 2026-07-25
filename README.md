@@ -86,6 +86,7 @@ docs/       Architecture, ERD, development, and troubleshooting docs
 
 ## Documentation
 
+- `docs/WEBSTAFFR_INTEGRATION.md` — current integration contract, known mismatches with WS3.3, and auth decisions
 - `docs/ARCHITECTURE.md` — module boundaries, adapter patterns, event-driven design
 - `docs/ERD.md` — entity-relationship diagram (Mermaid)
 - `docs/DEVELOPMENT.md` — local onboarding steps

@@ -6,13 +6,19 @@ SMM (Social Media Marketing Machine) is positioned as WebStaffr's social
 media manager agent, not a standalone SaaS product — see `README.md`'s
 status line and `docs/ARCHITECTURE.md`. This document states, honestly,
 what that means in code today versus what it will require to actually be
-true. As of commit `6fb5dc3`, **there is no live integration** between
-this repo and WebStaffr (`WebStaffr 3.3`, at `/Users/doc/Desktop/
-WebStaffr3.3`). The two systems are architecturally adjacent, not
-connected. This doc exists so that claim isn't repeated as fact
-elsewhere without qualification, and so the next person who wires the
-two together has an accurate starting point instead of having to
-reverse-engineer both codebases first.
+true. As of commit `26a07f1`, **there is live bridge code** between this repo and
+WebStaffr (`WebStaffr 3.3`, at `/Users/doc/Desktop/WebStaffr3.3`), but the
+two systems are not yet wired over HTTP. The intake contract is implemented
+in this repo at `backend/app/routers/integrations.py` and
+`backend/app/services/integration_service.py`, and the resulting WS3.3 seam
+is at `webstaffr/integrations/social_media/*`. The contract has known
+mismatches that must be resolved before going over the network: `mount_id`
+is UUID here and `int` in WS3.3; `brand_id`/`default_brand_id` are UUID FKs
+here and slugs in WS3.3's current plan JSON; WS3.3 currently sends
+`"platforms": ["meta"]`, but `"meta"` is not a valid `PlatformName` member.
+SMM also requires a service-to-service auth decision: it uses Clerk JWTs
+with `org_id`, while WS3.3 has no Clerk identity. Do not retrofit Clerk
+into WS3.3 and do not paper over this with a shared secret.
 
 ## The core mismatch: two incompatible tenant/identity models
 
@@ -47,14 +53,25 @@ it, and where does the `tenant_id ↔ organization_id` pairing live?
 
 ## What actually exists today
 
-- **Nothing calls from WS3.3 into SMM, or from SMM into WS3.3, at
-  runtime.** No shared network calls, no shared database, no shared auth
-  token. Confirmed by inspection of both repos' router/service layers —
-  neither references the other's URLs, env vars, or identifiers.
+- **SMM exposes bridge endpoints, but nothing calls them at runtime.** No
+  shared network calls are currently in flight between the two systems at
+  runtime. WS3.3 does not yet call SMM's bridge routes, and SMM does not
+  call back into WS3.3. Confirmed by inspection: WS3.3's router/service
+  layers do not reference SMM URLs, env vars, or identifiers, and SMM's
+  bridge endpoints exist but are not wired into any active call path yet.
+  The remaining gaps are contract alignment (`mount_id`, `brand_id`,
+  `platforms`) and a service-to-service auth decision.
 - **SMM's API surface is real and documented** — see `docs/API.md`-style
-  detail already covered by the live `openapi.json` (13 routers, 46
-  endpoints, auto-served at `/docs` when the backend is running). Every
+  detail already covered by the live `openapi.json` (15 router files,
+  32 paths, auto-served at `/docs` when the backend is running). Every
   tenant-scoped route requires a Clerk bearer token.
+- **The WS3.3 integration bridge exists as code, but is not yet live over
+  HTTP.** `POST /integrations/social-media-marketing/mount` and
+  `POST /integrations/social-media-marketing/mount/{mount_id}/intent` are
+  implemented in this repo and create Campaign → Post(s) → PostVersion v1
+  → PENDING Approval → execution graph + audit row in one transaction.
+  The remaining gap is network wiring plus contract/auth alignment with
+  WS3.3.
 - **WS3.3's API surface is real and documented** — see WS3.3's own
   `docs/API.md`. Every route requires either nothing (public-by-design,
   matching WS3.3's ADR-003/ADR-004), a shared-secret header, or (for

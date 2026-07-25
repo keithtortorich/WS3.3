@@ -24,8 +24,8 @@ Request body:
 {
   "tenant_id": "acme-hvac",
   "social_tenant_id": "org_ABC",
-  "platforms": ["meta"],
-  "default_brand_id": "acme-primary",
+  "platforms": ["facebook", "instagram"],
+  "default_brand_id": "00000000-0000-0000-0000-000000000000",
   "mode": "agent_managed"
 }
 ```
@@ -34,8 +34,12 @@ Response: `204` with `Location: /integrations/social-media-marketing/mount/{moun
 
 Rules:
 - `tenant_id` must already exist in WS3.3 intake records
-- `social_tenant_id` is the SMM org/Clerk identity
+- `social_tenant_id` is the SMM org/Clerk identity and must match the
+  authenticated caller's org — the server rejects mismatches
 - `mode` controls whether the SMM agent can act unattended or requires approval
+- `platforms` must use valid `PlatformName` values (`linkedin`, `facebook`,
+  `instagram`, `x`, `threads`, `tiktok`, `pinterest`, `youtube`,
+  `google_business`); `"meta"` is not valid and will not match any adapter
 
 ### POST /integrations/social-media-marketing/mount/{mount_id}/intent
 
@@ -45,10 +49,10 @@ Request body:
   "campaign_intent": {
     "objective": "bookings",
     "budget_cents": 50000,
-    "platforms": ["meta"],
+    "platforms": ["facebook", "instagram"],
     "start": "2026-08-01",
     "end": "2026-08-31",
-    "brand_id": "acme-primary"
+    "brand_id": "00000000-0000-0000-0000-000000000000"
   },
   "post_draft": {
     "headline": "Phoenix HVAC checkup special",
@@ -66,6 +70,12 @@ Response:
   "approval_url": "/approvals/wf_123"
 }
 ```
+
+Notes:
+- `brand_id` must be a real SMM brand UUID, not a slug. The server looks it
+  up org-scoped and returns `404` if it does not belong to the caller's org.
+- `platforms` must use valid `PlatformName` values; unknown values are
+  rejected before any rows are created.
 
 This makes WS3.3 the source of truth for workflows/approvals, while SMM owns creative and platform execution.
 

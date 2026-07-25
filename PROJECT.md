@@ -32,4 +32,8 @@ An AI workforce layer that takes on the recurring, people-shaped work of running
 ## MVP Scope (this repo)
 Full flow: intake → generated customer site → Angel widget embedded and working, plus live voice via Retell. Frontend/site-generation is delegated to Lovable; this repo owns backend logic (Angel, tenant isolation, GHL/voice integration, executor engine, attribution, tests).
 
+## Post-MVP Roadmap Decisions
+
+- 2026-07-25 : `social-media-marketing-machine`, combined with the `marketing-director-gtm` skill, is designated as the future "Marketing Coordinator" AI-employee role — the crux of the Business Manager Tier upgrade. Not started; see `TASKS.md` Decisions Log for detail. Revisit after MVP ships.
+
 *Carried forward from WebStaffr 3.0's `PROJECT.md`, 2026-07-22, with the old repo's process-specific preamble ("Load webstaffr-workflow-guardian...") dropped since it referenced a skill from the prior coordination model this repo doesn't use.*

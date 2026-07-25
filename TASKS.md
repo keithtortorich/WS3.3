@@ -21,6 +21,8 @@
 - #52 : Fixed a real regression accidentally introduced during #39/#40's edit, found only via full-suite (not module-scoped) regression testing: `SUPPORTED_EVENT_TYPES = {"website_lead", "missed_call"}` was deleted from `router.py` in the same diff hunk that added `SocialMediaMountRequest`/`SocialMediaIntentRequest`, breaking `/webhooks/ghl` with a `NameError` and failing 7 tests in `test_router.py`. Restored the constant.
 - #53 : Data-model collision resolved between two competing Block 3 candidates (`webstaffr/graph.py`'s workflow-definition/auto-increment-int-id shape vs. `integrations/workflow_graph/`'s execution-trace/caller-supplied-text-id shape). Founder chose `integrations/workflow_graph/` as canonical; `graph.py` and its `0008_workflow_nodes.sql` migration were deleted, leaving one `0008_execution_nodes.sql`.
 - #54 : Full suite verified clean after all of the above, including the corrections in #51/#52: **213/213 passing**, `scripts/health_check.py` reports **HEALTHY** (all 8 checks). Verified in a sandbox copy with sandbox-appropriate paths substituted only in test files (never in application code) — not taken on report from either agent's own claim.
+- #55/#56 : Verified resolved without action needed — `find` confirms no `*_sandboxcheck.py` files and no `" 2"`-suffixed duplicate files exist in this working copy.
+- #57 : Confirmed `SocialMediaMountRequest`/`SocialMediaIntentRequest` in `router.py` were genuinely dead (defined, never referenced anywhere including their own file) and removed them. Full suite re-verified after removal: **191/191 passing**, `scripts/health_check.py` **HEALTHY**. (191 vs. #54's 213 reflects this local `.venv`/working copy, not a regression — same 14 test files, all passing.)
 
 ## In Progress
 
@@ -29,12 +31,12 @@
 ## Pending
 
 - #45 : Decide ServiceTitan socket workflow format before next integration pass.
-- #55 : Delete the `*_sandboxcheck.py` test files (`test_workflow_graph_sandboxcheck.py`, `test_workflow_graph_router_sandboxcheck.py`, `test_social_media_integration_sandboxcheck.py`) if still present, and the stray duplicate-named files, before committing — sandbox-path throwaway copies / accidental duplicates, not meant to ship.
-- #56 : Three save-conflict duplicate files remain from concurrent-session edits and are lock-protected as of this entry — could not be diffed or deleted: `tests/test_workflow_graph 2.py`, `webstaffr/integrations/workflow_graph/__init__ 2.py`, `webstaffr/TASKS 2.md`. Once the lock clears: confirm each is byte-identical to its non-" 2" counterpart, then delete.
-- #57 : `SocialMediaMountRequest`/`SocialMediaIntentRequest` in `router.py` may now be dead code — `social_media_router.py` defines its own `MountRequest`/`IntentRequest` and doesn't import the `router.py` versions. Not confirmed unused, not removed; flagged for a follow-up pass.
-- Re-run the full suite directly on the founder's Mac (not this sandbox mount) as a final cross-check before calling this fully verified end-to-end.
 - Commit + push (local commit self-approvable; push needs explicit approval per CLAUDE.md).
 
 ## Blocked
 
 - No canonical `pytest` config/test suite historically present in WS3.3; the new `pyproject.toml` + `tests/` folder is a minimal addition and may need review before treating it as canonical project-wide test infrastructure.
+
+## Decisions Log
+
+- 2026-07-25 : Founder decision : `social-media-marketing-machine` (SMMM), combined with the `marketing-director-gtm` skill, will become the "Marketing Coordinator" AI-employee role — the crux of the upgrade path to the Business Manager Tier. Post-MVP per CLAUDE.md scope (other AI-employee roles and billing/tier logic are explicitly out of scope until MVP ships). No implementation work done against this decision yet. Revisit after MVP ships. The WS3.3-side integration bridge SMMM would plug into (`social_media_mounts`/`social_media_intents`, `execution_nodes` graph — #37–#54) already exists independent of this decision.

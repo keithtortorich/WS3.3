@@ -113,20 +113,7 @@ class BookAppointmentResponse(BaseModel):
     ghl_synced: bool
 
 
-class SocialMediaMountRequest(BaseModel):
-    tenant_id: str
-    social_tenant_id: str
-    platforms: list[str]
-    default_brand_id: Optional[str] = None
-    mode: str = "agent_managed"
-
-
-class SocialMediaIntentRequest(BaseModel):
-    campaign_intent: dict
-    post_draft: dict
-
-
-# Was accidentally deleted when SocialMediaMountRequest/SocialMediaIntentRequest
+# Was accidentally deleted when now-removed dead-code request models
 # were added above (both edits landed in the same spot during Block 2's work) --
 # restored here since /webhooks/ghl below still depends on it. Found via the
 # real test regression this caused (TestGHLWebhookEndpoint and related tests

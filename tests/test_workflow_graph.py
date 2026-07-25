@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path("/Users/doc/Desktop/WebStaffr3.3")
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from webstaffr.integrations.workflow_graph.client import (
@@ -88,7 +88,7 @@ def test_sqlite_execution_trace_round_trip() -> None:
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.executescript(
-        Path("/Users/doc/Desktop/WebStaffr3.3/webstaffr/migrations/0008_execution_nodes.sql").read_text()
+        (ROOT / "webstaffr" / "migrations" / "0008_execution_nodes.sql").read_text()
     )
     conn.commit()
 
@@ -131,7 +131,7 @@ def test_tenant_and_instance_scoping() -> None:
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row
     conn.executescript(
-        Path("/Users/doc/Desktop/WebStaffr3.3/webstaffr/migrations/0008_execution_nodes.sql").read_text()
+        (ROOT / "webstaffr" / "migrations" / "0008_execution_nodes.sql").read_text()
     )
     conn.commit()
 

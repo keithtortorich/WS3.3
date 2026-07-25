@@ -29,7 +29,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-ROOT = Path("/Users/doc/Desktop/WebStaffr3.3")
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from webstaffr.workers.angel.api_auth import StaticSecretVerifier

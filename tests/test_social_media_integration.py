@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path("/Users/doc/Desktop/WebStaffr3.3")
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from webstaffr.workers.angel.router import create_app

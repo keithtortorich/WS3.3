@@ -1,0 +1,477 @@
+/* ============================================================
+   SiteWork — backend wiring (our integration layer).
+   Kept separate from the vendor design JS (main.js / voice-widget.js).
+
+   - window.SWLeads  : lead form        → POST /api/lead
+   - window.SWVoice  : talking website  → OpenAI Realtime over WebRTC
+
+   The voice widget only connects when the server reports voice is live
+   (GET /api/voice/config). With no OPENAI_API_KEY the widget keeps its
+   built-in scripted demo — nothing here changes that path.
+   ============================================================ */
+(function () {
+  function postJSON(url, data, signal) {
+    return fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify(data || {}),
+      signal: signal,
+    });
+  }
+
+  /* ---------------- CTA → scroll to the embedded onboarding form ----------------
+     The onboarding wizard is now embedded on the page (at #start, inside the #get-demo
+     section). Filling it IS the intake, so the "Get Started Free" CTAs go to the FORM,
+     not Erika. On a page that has the form (#start — the home + the trade LPs), scroll
+     to it (smoothly, offset for the fixed header via #start{scroll-margin-top}). On the other
+     pages the CTAs are cross-page "/#get-demo" links, so we leave them alone and the browser
+     navigates to the home form natively. The voice path is unchanged: the orbs + the explicit
+     [data-voice-open] mic button still open Erika (wired in mkt-voice.js, not here). */
+  document.addEventListener("click", function (e) {
+    var cta = e.target.closest('a[href$="#get-demo"], a[href$="#claim"]');
+    if (!cta) return;
+    var form = document.getElementById("start");
+    if (form) {
+      e.preventDefault();
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
+  // Match the call panel's copy to the "Get Started Free" CTAs that open it, so the box
+  // confirms they're in the right place: tap the mic to get your talking website started.
+  // Marketing-only — tenant sites inject sw-tenant-voice.js (not this file) and set their own copy.
+  if (window.SWVoice && window.SWVoice.configure) {
+    window.SWVoice.configure({
+      status: "Get your talking website",
+      hint: "Tap Start call and tell Erika about your business — she'll build it and text you the link.",
+    });
+  }
+
+  /* ---------------- SWLeads (lead form) ---------------- */
+  // main.js calls window.SWLeads.submit(data) on submit, then shows the success
+  // state optimistically. The server validates + de-dupes, so a bot/empty submit
+  // never writes a row.
+  window.SWLeads = {
+    submit(data) {
+      return postJSON("/api/lead", data)
+        .then((res) => res.json().catch(() => ({})))
+        .then((body) => {
+          if (!body || body.ok !== true) console.warn("[SWLeads] lead not accepted", body);
+          return body || { ok: false };
+        })
+        .catch((err) => {
+          console.error("[SWLeads] lead submit failed", err);
+          return { ok: false };
+        });
+    },
+  };
+
+  /* ---------------- SWVoice (WebRTC realtime) ---------------- */
+  // The browser connects mic <-> OpenAI Realtime directly (Path 1). Our server
+  // only mints a ~1-minute ephemeral token; the standing API key never ships.
+  const OPENAI_CALLS_URL = "https://api.openai.com/v1/realtime/calls";
+
+  let session = null; // { pc, dc, micStream, audioEl }
+  let connecting = false;
+  let pending = []; // events queued before the data channel is open
+  let responseActive = false; // a response is mid-flight (response.created → response.done)
+  let pendingCreate = false; // a response.create we deferred until the active one finishes
+
+  // Out-of-band transcript relay (PLAN §7.12). OpenAI already pushes the transcription events
+  // down the data channel to this browser; we copy them to our server on a debounced,
+  // fire-and-forget POST that is NOT on the WebRTC audio path — zero added call latency.
+  const RELAY_URL = "/api/voice/transcript";
+  let sessionId = null; // server-minted id that groups this call's relayed turns
+  let pendingTurns = []; // turns buffered for the next relay
+  let flushTimer = null;
+
+  function queueTurn(role, text) {
+    if (!text) return;
+    pendingTurns.push({ role: role, text: text });
+    // Gate the debounce on sessionId (flushTurns no-ops without it). A turn buffered before
+    // the id is minted — e.g. the chip that STARTS the call — is flushed once startSession
+    // sets sessionId, so the opening chip turn isn't lost from the stored transcript.
+    if (sessionId && !flushTimer) flushTimer = setTimeout(() => flushTurns(false), 1500);
+  }
+
+  function flushTurns(ended) {
+    if (flushTimer) { clearTimeout(flushTimer); flushTimer = null; }
+    if (!sessionId) return;
+    const batch = pendingTurns;
+    pendingTurns = [];
+    if (!batch.length && !ended) return;
+    const payload = { session_id: sessionId, turns: batch, ended: !!ended };
+
+    if (ended && navigator.sendBeacon) {
+      try {
+        navigator.sendBeacon(RELAY_URL, new Blob([JSON.stringify(payload)], { type: "application/json" }));
+        return;
+      } catch (_) {}
+    }
+    postJSON(RELAY_URL, payload).catch(() => {
+      pendingTurns = batch.concat(pendingTurns);
+    });
+  }
+
+  function teardown() {
+    flushTurns(true); // finalize the session row before tearing the call down
+    if (session) {
+      try { session.dc && session.dc.close(); } catch (_) {}
+      try { session.pc && session.pc.close(); } catch (_) {}
+      try { session.micStream && session.micStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+      try { session.audioEl && session.audioEl.remove(); } catch (_) {}
+    }
+    session = null;
+    connecting = false;
+    pending = [];
+    pendingTurns = [];
+    sessionId = null;
+    responseActive = false;
+    pendingCreate = false;
+  }
+
+  // Guarded response trigger. The OpenAI Realtime server auto-creates a response on every
+  // user turn (semantic_vad), so firing our own response.create while one is already active
+  // is rejected with `conversation_already_has_active_response` — which used to be swallowed
+  // as silence. If a response is in flight, defer until it finishes (response.done) and fire
+  // exactly once; otherwise create immediately.
+  function requestResponse() {
+    if (responseActive) {
+      pendingCreate = true;
+    } else {
+      pendingCreate = false;
+      // Pin audio on the response too (not just the session): GA gpt-realtime otherwise
+      // answers a tool-follow-up / chip turn in TEXT (no audio) and the visitor hears silence.
+      dcSend({ type: "response.create", response: { output_modalities: ["audio"] } });
+    }
+  }
+
+  // Surface realtime errors server-side — they were console-only before, so a dropped/errored
+  // response was invisible in prod. Best-effort, off the audio path; rides the transcript relay.
+  function relayError(error) {
+    if (!sessionId || !error) return;
+    const msg = error.code || error.type || error.message || "realtime_error";
+    try {
+      postJSON(RELAY_URL, { session_id: sessionId, errors: [String(msg)] }).catch(() => {});
+    } catch (_) {}
+  }
+
+  // Buffer until the channel is open (a tapped chip / typed line can arrive before the
+  // SDP handshake finishes); flushPending() drains it on 'open'.
+  function dcSend(obj) {
+    if (session && session.dc && session.dc.readyState === "open") {
+      session.dc.send(JSON.stringify(obj));
+    } else {
+      pending.push(obj);
+    }
+  }
+
+  function flushPending() {
+    const queued = pending;
+    pending = [];
+    queued.forEach((obj) => dcSend(obj));
+  }
+
+  // The model's capture_lead tool runs here, against the SAME intake endpoint as the
+  // on-page form — a voice-captured lead becomes a source:marketing lead too. `via:"voice"`
+  // tells the server this is a spoken-consent lead (so it stores the voice TCPA disclosure
+  // and texts the onboarding link), and sms_consent reflects whether Erika got a clear yes.
+  async function captureLead(args, callId) {
+    let captured = false;
+    let linkTexted = false;
+    let linkSent = false;
+    let followupChannel = null;
+    let qualifiedTradeBusiness = null;
+    let error = null;
+    // Bound the tool round-trip so a slow/hung /api/lead can't stall the conversation —
+    // on timeout we still return a function result so the model recovers instead of going dead.
+    const controller = new AbortController();
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 8000);
+    try {
+      const res = await postJSON(
+        "/api/lead",
+        {
+          name: args.name,
+          business: args.business,
+          trade: args.trade,
+          phone: args.phone,
+          email: args.email,
+          website: args.website,
+          sms_consent: args.sms_consent === true,
+          qualified_trade_business: args.qualified_trade_business === true,
+          via: "voice",
+          message: "Captured by Erika, the AI voice concierge",
+        },
+        controller.signal
+      );
+      const body = await res.json().catch(() => ({}));
+      captured = !!(
+        body && (body.captured === true || (body.ok === true && body.captured !== false))
+      );
+      linkSent = !!(body && body.link_sent === true);
+      linkTexted = !!(body && body.link_texted === true);
+      followupChannel = body && body.followup_channel ? String(body.followup_channel) : null;
+      qualifiedTradeBusiness =
+        body && body.qualified_trade_business === false
+          ? false
+          : args.qualified_trade_business === true;
+      error = body && body.error ? String(body.error) : null;
+    } catch (err) {
+      console.error("[SWVoice] capture_lead failed", err);
+      error = timedOut ? "timeout" : "network_error";
+    } finally {
+      clearTimeout(timer);
+    }
+    dcSend({
+      type: "conversation.item.create",
+      item: {
+        type: "function_call_output",
+        call_id: callId,
+        output: JSON.stringify({
+          captured: captured,
+          link_sent: linkSent,
+          link_texted: linkTexted,
+          followup_channel: followupChannel,
+          qualified_trade_business: qualifiedTradeBusiness,
+          error: error,
+        }),
+      },
+    });
+    requestResponse();
+  }
+
+  function handleEvent(evt) {
+    if (!session) return; // ignore any frames that arrive after teardown (no phantom re-arm)
+    switch (evt.type) {
+      case "input_audio_buffer.speech_started":
+        window.SWVoice.setState("listening");
+        break;
+      case "response.created":
+        responseActive = true;
+        window.SWVoice.setState("thinking");
+        break;
+      case "input_audio_buffer.speech_stopped":
+        window.SWVoice.setState("thinking");
+        break;
+      case "response.output_audio.delta":
+      case "response.audio.delta":
+      case "response.output_audio_transcript.delta":
+      case "response.audio_transcript.delta":
+        // In the WebRTC path the model's audio rides the MEDIA track, not response.output_audio
+        // .delta events — so the audio-transcript stream is the reliable "she's speaking" signal.
+        window.SWVoice.setState("speaking");
+        break;
+      case "response.done":
+        responseActive = false;
+        window.SWVoice.setState("listening");
+        // Fire a response.create we deferred because one was already in flight.
+        if (pendingCreate) requestResponse();
+        break;
+      case "conversation.item.input_audio_transcription.completed":
+        if (evt.transcript) {
+          const ut = String(evt.transcript).trim();
+          window.SWVoice.addMessage("user", ut);
+          queueTurn("user", ut);
+        }
+        break;
+      case "response.output_audio_transcript.done":
+      case "response.audio_transcript.done":
+        if (evt.transcript) {
+          const at = String(evt.transcript).trim();
+          window.SWVoice.addMessage("ai", at);
+          queueTurn("assistant", at);
+        }
+        break;
+      case "response.function_call_arguments.done":
+        if (evt.name === "capture_lead") {
+          let args = {};
+          try { args = JSON.parse(evt.arguments || "{}"); } catch (_) {}
+          captureLead(args, evt.call_id);
+        }
+        break;
+      case "error":
+        console.error("[SWVoice] realtime error", evt.error || evt);
+        relayError(evt.error || evt);
+        break;
+    }
+  }
+
+  async function startSession() {
+    if (session || connecting) return;
+    connecting = true;
+    window.SWVoice.setState("thinking");
+
+    try {
+      // 1. ephemeral token (server-minted, short-lived).
+      // On a trade landing page every orb carries data-voice-trade=<slug>; pass it so the
+      // demo answers AS that trade (the server routes it to TradeDemoAgent). No attribute
+      // present (home + other pages) → empty body → the default Erika sales concierge.
+      const tradeEl = document.querySelector("[data-voice-trade]");
+      const voiceTrade = tradeEl && tradeEl.getAttribute("data-voice-trade");
+      const tokRes = await fetch("/api/voice/token", {
+        method: "POST",
+        headers: { "content-type": "application/json", accept: "application/json" },
+        body: JSON.stringify(voiceTrade ? { trade: voiceTrade } : {}),
+      });
+      if (!tokRes.ok) throw new Error("token mint failed: " + tokRes.status);
+      const tok = await tokRes.json();
+      if (!tok.value) throw new Error("no ephemeral token in response");
+      sessionId = tok.session_id || null;
+      // Flush any turns buffered before the id existed (the call-starting chip).
+      if (sessionId && pendingTurns.length) flushTurns(false);
+
+      // 2. microphone (the launch tap satisfies the autoplay gesture requirement)
+      // Echo cancellation + noise suppression are load-bearing for the realtime transcriber:
+      // on speakers, the AI's own voice echoes into the mic and gets transcribed as phantom
+      // "user" turns (gpt-4o-transcribe then hallucinates fragments), which derails the call.
+      // The bare {audio:true} default leaves these device-dependent; request them explicitly.
+      const micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      });
+
+      // If the mic device goes away mid-call (a Bluetooth/Continuity hand-off to a phone, or
+      // the device gets unplugged), the track fires `ended` — the input is gone and the call
+      // can't continue. End it cleanly and tell the visitor how to recover, instead of leaving
+      // a silently frozen widget (observed: a Mac using the iPhone as the Continuity mic).
+      const micTrack = micStream.getAudioTracks()[0];
+      if (micTrack) {
+        micTrack.addEventListener("ended", () => {
+          if (session || connecting) {
+            teardown();
+            window.SWVoice.setState("idle");
+            if (window.SWVoice.notify) {
+              window.SWVoice.notify(
+                "Microphone disconnected.",
+                "Your mic switched to another device — tap Start call to reconnect."
+              );
+            }
+          }
+        });
+      }
+
+      // 3. peer connection + remote audio sink
+      const pc = new RTCPeerConnection();
+      const audioEl = document.createElement("audio");
+      audioEl.autoplay = true;
+      audioEl.style.display = "none";
+      document.body.appendChild(audioEl);
+      pc.ontrack = (e) => { audioEl.srcObject = e.streams[0]; };
+      micStream.getTracks().forEach((t) => pc.addTrack(t, micStream));
+
+      // 4. events data channel
+      const dc = pc.createDataChannel("oai-events");
+      dc.addEventListener("open", () => {
+        window.SWVoice.setState("listening");
+        // Voice-first: if a hero chip queued a question, answer it; otherwise the
+        // AI greets first by voice (like answering a call) — no typed greeting.
+        if (pending.length) flushPending();
+        else requestResponse();
+      });
+      dc.addEventListener("message", (e) => {
+        let evt;
+        try { evt = JSON.parse(e.data); } catch (_) { return; }
+        handleEvent(evt);
+      });
+
+      // Release the mic + reset the UI if the connection drops (network/ICE failure or
+      // a remote close) — the widget never calls onStop, so guard the transport too.
+      const fatal = () => {
+        if (session || connecting) {
+          teardown();
+          window.SWVoice.setState("idle");
+          // Tell the visitor why the orb went quiet (mirrors the start-failure path).
+          if (window.SWVoice.notify) {
+            window.SWVoice.notify(
+              "Call ended.",
+              "Connection dropped — tap Start call to try again, or call (888) 302-8368."
+            );
+          }
+        }
+      };
+      pc.addEventListener("connectionstatechange", () => {
+        if (pc.connectionState === "failed" || pc.connectionState === "closed") fatal();
+      });
+      pc.addEventListener("iceconnectionstatechange", () => {
+        if (pc.iceConnectionState === "failed") fatal();
+      });
+      dc.addEventListener("close", fatal);
+
+      session = { pc, dc, micStream, audioEl };
+      connecting = false;
+
+      // 5. SDP offer -> answer (the model is carried by the ephemeral session)
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      const sdpRes = await fetch(OPENAI_CALLS_URL, {
+        method: "POST",
+        body: offer.sdp,
+        headers: { Authorization: "Bearer " + tok.value, "Content-Type": "application/sdp" },
+      });
+      if (!sdpRes.ok) throw new Error("sdp exchange failed: " + sdpRes.status);
+      await pc.setRemoteDescription({ type: "answer", sdp: await sdpRes.text() });
+    } catch (err) {
+      console.error("[SWVoice] could not start voice session", err);
+      window.SWVoice.setState("idle");
+      teardown();
+      // No on-page form to fall back to anymore — surface the real line in the panel.
+      if (window.SWVoice.notify) {
+        window.SWVoice.notify(
+          "Couldn't start the call.",
+          "Try again, or call or text us at (888) 302-8368."
+        );
+      }
+    }
+  }
+
+  function wireVoice() {
+    // Flush the transcript tail + finalize on real page unload (sendBeacon survives it).
+    window.addEventListener("pagehide", () => flushTurns(true));
+
+    window.SWVoice.connect({
+      onStart: startSession,
+      // The widget's End call button / panel close calls onStop — tear the session
+      // down and release the mic.
+      onStop: () => teardown(),
+      // Mute toggles the local mic track. The audio leg is browser<->OpenAI direct,
+      // so disabling the track here stops your audio from reaching the model.
+      onMute: (m) => {
+        if (session && session.micStream) {
+          session.micStream.getAudioTracks().forEach((t) => (t.enabled = !m));
+        }
+      },
+      onUserText: (text) => {
+        // Start the session if needed, then queue the text — dcSend buffers until the
+        // channel opens, so a chip tapped before connect isn't dropped.
+        if (!session && !connecting) startSession();
+        dcSend({
+          type: "conversation.item.create",
+          item: { type: "message", role: "user", content: [{ type: "input_text", text: text }] },
+        });
+        requestResponse();
+        // Relay chip/typed turns to the transcript store too (they were on-screen only,
+        // so a chip-driven exchange was invisible in stored transcripts).
+        queueTurn("user", text);
+      },
+    });
+  }
+
+  // Wire the transport IMMEDIATELY so a tap during the config round-trip starts a
+  // real call (the widget holds on "Connecting…"), not the scripted demo. Then tell
+  // the widget whether voice is actually live: enabled -> real, disabled/down -> the
+  // built-in scripted demo (keyless dev/CI, or OpenAI down).
+  if (window.SWVoice) wireVoice();
+  fetch("/api/voice/config", { headers: { accept: "application/json" } })
+    .then((r) => r.json())
+    .then((cfg) => {
+      if (window.SWVoice && window.SWVoice.setVoiceReady) {
+        window.SWVoice.setVoiceReady(!!(cfg && cfg.enabled));
+      }
+    })
+    .catch(() => {
+      if (window.SWVoice && window.SWVoice.setVoiceReady) window.SWVoice.setVoiceReady(false);
+    });
+})();

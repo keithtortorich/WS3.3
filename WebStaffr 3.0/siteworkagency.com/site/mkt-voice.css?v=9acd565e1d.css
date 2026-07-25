@@ -1,0 +1,876 @@
+/* ============================================================
+   SiteWork — marketing voice UI (the "Premier" look).
+
+   Ported from the Premier Garage Doors design handoff (css/voice.css +
+   the .voice-feature block of css/styles.css) and made self-contained for
+   the marketing site: the espresso/bronze palette + fonts are inlined as
+   local custom properties on the .vw / .voice-feature roots, so this file
+   renders the same regardless of the active marketing theme.
+
+   Two surfaces:
+     1. .voice-feature  — the big on-page "talk to it" section (animated orb)
+     2. .vw             — the persistent floating widget (launcher + call panel
+                          with live transcript + Start/End call button)
+
+   Namespacing notes (so this never collides with styles.css):
+     - the section's display orb uses .vf-* classes (styles.css already owns
+       the bare .orb / .orb-ring used by the on-page hero cards).
+     - every @keyframes here is prefixed mkt-.
+   The wiring lives in mkt-voice.js; the real transport is sw-backend.js.
+   ============================================================ */
+
+.vw,
+.voice-feature {
+  /* Match the marketing site's estate palette (styles.css theme vars) so the
+     widget's colors track the site; fall back to the Premier tones if unset. */
+  --espresso: var(--bg, #0c1712);
+  --bronze: var(--accent, #be9251);
+  --bronze-deep: color-mix(in srgb, var(--accent, #be9251) 78%, #000);
+  --bronze-glow: var(--accent-2, #d5ab6b);
+  --vf-ink: var(--ink, #f2efe6);
+  --vf-ink-soft: var(--ink-soft, #9faea2);
+  /* metallic orb face, derived from the site accent */
+  --vf-orb-grad: radial-gradient(
+    circle at 34% 30%,
+    color-mix(in srgb, var(--bronze-glow) 62%, #fff),
+    var(--bronze-glow) 26%,
+    var(--bronze) 56%,
+    color-mix(in srgb, var(--bronze) 42%, #000) 86%
+  );
+  --vf-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* Match the marketing site's typography: inherit the live theme fonts from
+     styles.css (estate theme = Space Grotesk display + Instrument Sans body),
+     with a fallback if the theme vars aren't present. */
+  --vf-display: var(--font-display, "Space Grotesk", system-ui, sans-serif);
+  --vf-body: var(--font-body, "Instrument Sans", system-ui, sans-serif);
+}
+
+/* shared keyframes ------------------------------------------------------ */
+@keyframes mkt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes mkt-opulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mkt-eq {
+  0%,
+  100% {
+    height: 18%;
+  }
+  50% {
+    height: 90%;
+  }
+}
+@keyframes mkt-orbfloat {
+  0%,
+  100% {
+    transform: translateY(-6px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+@keyframes mkt-livedot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(91, 208, 138, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(91, 208, 138, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(91, 208, 138, 0);
+  }
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5bd08a;
+  box-shadow: 0 0 0 0 rgba(91, 208, 138, 0.7);
+  animation: mkt-livedot 1.8s infinite;
+  flex: none;
+}
+
+/* =====================================================================
+   1. Big on-page Voice AI feature section
+   ===================================================================== */
+.voice-feature {
+  position: relative;
+  overflow: hidden;
+  background: var(--espresso);
+  color: var(--vf-ink);
+  padding: clamp(64px, 9vw, 130px) 0;
+  font-family: var(--vf-body);
+}
+.voice-feature .vf-glow {
+  position: absolute;
+  width: 680px;
+  height: 680px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(213, 171, 107, 0.22), transparent 62%);
+  filter: blur(20px);
+  z-index: 0;
+  pointer-events: none;
+}
+.voice-feature .vf-glow.g1 {
+  top: -200px;
+  right: -120px;
+}
+.voice-feature .vf-glow.g2 {
+  bottom: -260px;
+  left: -160px;
+  background: radial-gradient(circle, rgba(58, 118, 106, 0.2), transparent 62%);
+}
+.vf-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 0.92fr;
+  gap: clamp(40px, 5vw, 90px);
+  align-items: center;
+}
+.vf-eyebrow {
+  font-family: var(--vf-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bronze-glow);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.vf-eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 2px;
+  background: var(--bronze);
+  display: inline-block;
+}
+.voice-feature h2 {
+  font-family: var(--vf-display);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.02;
+  font-size: clamp(36px, 5.4vw, 72px);
+  color: var(--vf-ink);
+  margin: 18px 0 0;
+}
+.voice-feature h2 em {
+  font-style: italic;
+  color: var(--bronze-glow);
+}
+.vf-lede {
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.55;
+  color: var(--vf-ink-soft);
+  margin: 22px 0 0;
+  max-width: 46ch;
+}
+.vf-points {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 30px 0 36px;
+}
+.vf-point {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.vf-point .d {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+  background: rgba(213, 171, 107, 0.14);
+  border: 1px solid rgba(213, 171, 107, 0.35);
+  color: var(--bronze-glow);
+}
+.vf-point p {
+  margin: 0;
+  color: var(--vf-ink-soft);
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+.vf-point b {
+  color: var(--vf-ink);
+  font-weight: 600;
+}
+.vf-cta {
+  display: flex;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.vf-tel {
+  color: var(--bronze-glow);
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--vf-ease);
+}
+.vf-tel:hover {
+  border-color: var(--bronze-glow);
+}
+.vf-tel .ar {
+  transition: transform 0.3s var(--vf-ease);
+}
+.vf-tel:hover .ar {
+  transform: translateX(4px);
+}
+
+/* the big animated stage orb — clickable ([data-voice-open]) so "tap the orb" is true */
+.vf-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  max-width: 460px;
+  margin-inline: auto;
+  width: 100%;
+}
+.vf-stage[data-voice-open] {
+  cursor: pointer;
+}
+.vf-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(213, 171, 107, 0.28);
+}
+.vf-ring.r1 {
+  inset: 0;
+  animation: mkt-spin 26s linear infinite;
+}
+.vf-ring.r2 {
+  inset: 11%;
+  border-color: rgba(213, 171, 107, 0.18);
+  animation: mkt-spin 34s linear infinite reverse;
+}
+.vf-ring.r3 {
+  inset: 23%;
+  border-style: dashed;
+  border-color: rgba(247, 243, 234, 0.14);
+  animation: mkt-spin 50s linear infinite;
+}
+.vf-pulse {
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  border: 1px solid rgba(213, 171, 107, 0.5);
+  animation: mkt-opulse 3s var(--vf-ease) infinite;
+}
+.vf-orb {
+  position: relative;
+  width: 54%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--vf-orb-grad);
+  box-shadow:
+    0 30px 70px -18px rgba(190, 146, 81, 0.7),
+    inset 0 -16px 40px rgba(60, 32, 12, 0.55),
+    inset 0 12px 30px rgba(255, 231, 196, 0.45);
+  display: grid;
+  place-items: center;
+  animation: mkt-orbfloat 6s ease-in-out infinite;
+}
+.vf-orb::after {
+  content: "";
+  position: absolute;
+  width: 30%;
+  height: 18%;
+  top: 18%;
+  left: 22%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 248, 236, 0.8), transparent 70%);
+  filter: blur(3px);
+}
+.vf-eq {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  height: 42%;
+  z-index: 2;
+}
+.vf-eq span {
+  width: 5px;
+  border-radius: 3px;
+  background: rgba(255, 248, 236, 0.92);
+  box-shadow: 0 0 8px rgba(255, 240, 214, 0.6);
+  height: 30%;
+  animation: mkt-eq 1.1s ease-in-out infinite;
+}
+.vf-eq span:nth-child(1) {
+  animation-delay: 0s;
+}
+.vf-eq span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.vf-eq span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.vf-eq span:nth-child(4) {
+  animation-delay: 0.12s;
+}
+.vf-eq span:nth-child(5) {
+  animation-delay: 0.27s;
+}
+.vf-eq span:nth-child(6) {
+  animation-delay: 0.05s;
+}
+.vf-eq span:nth-child(7) {
+  animation-delay: 0.34s;
+}
+.vf-cap {
+  position: absolute;
+  bottom: -6%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 18, 13, 0.66);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(213, 171, 107, 0.3);
+  color: var(--vf-ink);
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .vf-inner {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+  .vf-stage {
+    max-width: 320px;
+    order: -1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vf-ring,
+  .vf-pulse,
+  .vf-orb,
+  .vf-eq span,
+  .live-dot,
+  .vw-launch .mini .ping,
+  .vw-eq span,
+  .vw-orb .r1,
+  .vw-orb .r2,
+  .vw.listening .vw-orb .pulse,
+  .vw.listening .vw-bars span,
+  .vw.speaking .vw-bars span {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   2. Floating Voice AI widget (launcher + call panel)
+   ===================================================================== */
+.vw {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  z-index: 120;
+  font-family: var(--vf-body);
+}
+
+/* collapsed launcher */
+.vw-launch {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--espresso);
+  color: var(--vf-ink);
+  border: none;
+  border-radius: 999px;
+  padding: 9px 9px;
+  box-shadow: 0 22px 50px -18px rgba(20, 18, 13, 0.7);
+  cursor: pointer;
+  transition:
+    transform 0.5s var(--vf-ease),
+    box-shadow 0.5s,
+    gap 0.5s,
+    padding 0.5s;
+}
+.vw-launch:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 28px 60px -18px rgba(20, 18, 13, 0.8);
+}
+.vw-launch .mini {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--vf-orb-grad);
+  box-shadow:
+    inset 0 -6px 16px rgba(60, 32, 12, 0.5),
+    inset 0 5px 12px rgba(255, 231, 196, 0.5);
+}
+.vw-launch .mini .ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--bronze);
+  animation: mkt-opulse 2.4s var(--vf-ease) infinite;
+}
+.vw-eq {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  height: 20px;
+}
+.vw-eq span {
+  width: 3px;
+  border-radius: 2px;
+  background: #fff;
+  height: 40%;
+  animation: mkt-eq 1s ease-in-out infinite;
+}
+.vw-eq span:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.vw-eq span:nth-child(3) {
+  animation-delay: 0.26s;
+}
+.vw-eq span:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.vw-eq span:nth-child(5) {
+  animation-delay: 0.3s;
+}
+.vw-launch .txt {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    max-width 0.5s var(--vf-ease),
+    opacity 0.4s,
+    margin 0.5s;
+  text-align: left;
+}
+.vw-launch:hover .txt,
+.vw-launch.peek .txt {
+  max-width: 190px;
+  opacity: 1;
+  margin: 0 14px 0 12px;
+}
+.vw-launch .txt .t {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.1;
+  display: block;
+}
+.vw-launch .txt .s {
+  font-size: 11.5px;
+  color: var(--vf-ink-soft);
+  letter-spacing: 0.03em;
+}
+
+/* expanded panel */
+.vw-panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  background: var(--espresso);
+  border: 1px solid rgba(247, 243, 234, 0.1);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 40px 90px -24px rgba(0, 0, 0, 0.6);
+  color: var(--vf-ink);
+  transform: translateY(20px) scale(0.96);
+  transform-origin: bottom right;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.5s var(--vf-ease),
+    opacity 0.4s,
+    visibility 0.4s;
+}
+.vw-panel.open {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+}
+
+.vw-head {
+  position: relative;
+  padding: 20px 20px 18px;
+  background: linear-gradient(160deg, var(--bg2, #122019), var(--bg, #0c1712));
+  border-bottom: 1px solid rgba(247, 243, 234, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.vw-head .glow {
+  position: absolute;
+  top: -50px;
+  right: -30px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(213, 171, 107, 0.3), transparent 65%);
+  pointer-events: none;
+}
+.vw-avatar {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex: none;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: var(--vf-orb-grad);
+  box-shadow:
+    inset 0 -5px 14px rgba(60, 32, 12, 0.5),
+    inset 0 4px 10px rgba(255, 231, 196, 0.5);
+}
+.vw-avatar .ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(213, 171, 107, 0.45);
+}
+.vw-htext {
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+}
+.vw-htext .nm {
+  font-weight: 600;
+  font-size: 15.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.vw-htext .st {
+  font-size: 12.5px;
+  color: var(--vf-ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 2px;
+}
+.vw-x {
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(247, 243, 234, 0.18);
+  background: transparent;
+  color: var(--vf-ink-soft);
+  display: grid;
+  place-items: center;
+  flex: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.vw-x:hover {
+  background: rgba(247, 243, 234, 0.1);
+  color: #fff;
+}
+
+/* visualizer */
+.vw-viz {
+  position: relative;
+  padding: 30px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  background: radial-gradient(120% 80% at 50% 0%, rgba(213, 171, 107, 0.08), transparent 60%);
+}
+.vw-orb {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--vf-orb-grad);
+  box-shadow:
+    0 18px 44px -12px rgba(190, 146, 81, 0.6),
+    inset 0 -10px 26px rgba(60, 32, 12, 0.5),
+    inset 0 8px 20px rgba(255, 231, 196, 0.45);
+  transition: transform 0.4s;
+}
+.vw-orb .r {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(213, 171, 107, 0.35);
+}
+.vw-orb .r1 {
+  inset: -14px;
+  animation: mkt-spin 18s linear infinite;
+}
+.vw-orb .r2 {
+  inset: -26px;
+  border-style: dashed;
+  border-color: rgba(247, 243, 234, 0.14);
+  animation: mkt-spin 30s linear infinite reverse;
+}
+.vw-orb .pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(213, 171, 107, 0.5);
+  opacity: 0;
+}
+.vw.listening .vw-orb .pulse {
+  opacity: 1;
+  animation: mkt-opulse 2s var(--vf-ease) infinite;
+}
+.vw-bars {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 46px;
+  z-index: 2;
+}
+.vw-bars span {
+  width: 4px;
+  border-radius: 3px;
+  background: rgba(255, 248, 236, 0.95);
+  box-shadow: 0 0 6px rgba(255, 240, 214, 0.5);
+  height: 20%;
+}
+.vw.listening .vw-bars span,
+.vw.speaking .vw-bars span {
+  animation: mkt-eq 1s ease-in-out infinite;
+}
+.vw-bars span:nth-child(1) {
+  animation-delay: 0s;
+}
+.vw-bars span:nth-child(2) {
+  animation-delay: 0.13s;
+}
+.vw-bars span:nth-child(3) {
+  animation-delay: 0.27s;
+}
+.vw-bars span:nth-child(4) {
+  animation-delay: 0.08s;
+}
+.vw-bars span:nth-child(5) {
+  animation-delay: 0.21s;
+}
+.vw-bars span:nth-child(6) {
+  animation-delay: 0.31s;
+}
+.vw-bars span:nth-child(7) {
+  animation-delay: 0.05s;
+}
+.vw-prompt {
+  text-align: center;
+}
+.vw-prompt .big {
+  font-family: var(--vf-display);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--vf-ink);
+  line-height: 1.2;
+}
+.vw-prompt .sm {
+  font-size: 13px;
+  color: var(--vf-ink-soft);
+  margin-top: 5px;
+  line-height: 1.45;
+}
+
+/* transcript */
+.vw-script {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s var(--vf-ease);
+  background: rgba(0, 0, 0, 0.18);
+}
+.vw.in-call .vw-script {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.vw-script-inner {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vw-msg {
+  display: flex;
+  gap: 9px;
+  max-width: 88%;
+  animation: mkt-msgin 0.3s var(--vf-ease);
+}
+@keyframes mkt-msgin {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.vw-msg .b {
+  padding: 10px 13px;
+  border-radius: 13px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.vw-msg.bot {
+  align-self: flex-start;
+}
+.vw-msg.bot .b {
+  background: rgba(247, 243, 234, 0.08);
+  border: 1px solid rgba(247, 243, 234, 0.08);
+  border-bottom-left-radius: 4px;
+  color: #e3dccd;
+}
+.vw-msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.vw-msg.user .b {
+  background: var(--bronze);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+/* quick actions */
+.vw-quick {
+  padding: 14px 18px 4px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.vw-quick button {
+  font-family: var(--vf-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e3dccd;
+  background: rgba(247, 243, 234, 0.06);
+  border: 1px solid rgba(247, 243, 234, 0.14);
+  border-radius: 999px;
+  padding: 9px 14px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.vw-quick button:hover {
+  background: rgba(213, 171, 107, 0.16);
+  border-color: rgba(213, 171, 107, 0.4);
+  color: #fff;
+}
+.vw-quick button svg {
+  color: var(--bronze-glow);
+}
+
+/* controls */
+.vw-controls {
+  padding: 16px 18px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.vw-call {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: var(--bronze);
+  color: #fff;
+  border: none;
+  border-radius: 13px;
+  padding: 14px;
+  font-family: var(--vf-body);
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.vw-call:hover {
+  background: var(--bronze-deep);
+}
+.vw.in-call .vw-call {
+  background: #c0392b;
+}
+.vw.in-call .vw-call:hover {
+  background: #a93226;
+}
+.vw-mute {
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 13px;
+  border: 1px solid rgba(247, 243, 234, 0.18);
+  background: rgba(247, 243, 234, 0.05);
+  color: var(--vf-ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.vw-mute:hover {
+  background: rgba(247, 243, 234, 0.12);
+  color: #fff;
+}
+.vw-mute.on {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
+.vw-foot {
+  padding: 0 18px 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #7a7264;
+  letter-spacing: 0.02em;
+}
+.vw-foot b {
+  color: var(--vf-ink-soft);
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .vw {
+    right: 16px;
+    bottom: 16px;
+  }
+  .vw-launch .txt {
+    display: none;
+  }
+  .vw-panel {
+    width: calc(100vw - 32px);
+  }
+  .vw-head .glow {
+    right: -14px;
+    width: 156px;
+    height: 156px;
+  }
+}

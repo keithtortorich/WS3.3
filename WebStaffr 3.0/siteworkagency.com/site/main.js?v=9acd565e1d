@@ -1,0 +1,222 @@
+/* ============================================================
+   Site Works — site behaviors (theme boot, hero slides, nav,
+   reveal, FAQ, lead form)
+   ============================================================ */
+
+(function () {
+  // ---------- theme boot (set ASAP; tweaks panel on index writes these) ----------
+  const html = document.documentElement;
+  try {
+    const theme = localStorage.getItem("sw-theme");
+    const motion = localStorage.getItem("sw-heromotion");
+    if (theme) html.setAttribute("data-theme", theme);
+    if (motion) html.setAttribute("data-heromotion", motion);
+  } catch (e) {}
+  if (!html.getAttribute("data-theme")) html.setAttribute("data-theme", "estate");
+  if (!html.getAttribute("data-heromotion")) html.setAttribute("data-heromotion", "kenburns");
+  html.classList.add("js");
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // ---------- header scroll state ----------
+    const header = document.querySelector(".site-header");
+    const onScroll = () => header && header.classList.toggle("scrolled", window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    // ---------- mobile nav (hamburger + slide-down sheet) ----------
+    // Built from the existing header so it stays in sync on every page. Pages
+    // with no nav links (the stripped offer-page header) are skipped.
+    if (header) {
+      const headerCta = header.querySelector(".header-cta");
+      const navLinks = [...header.querySelectorAll(".nav a")];
+      if (navLinks.length) {
+        const logoHTML = (header.querySelector(".logo") || {}).outerHTML || "";
+        const ctaHTML = headerCta ? headerCta.innerHTML : "";
+        const linksHTML = navLinks
+          .map(
+            (a) =>
+              `<a href="${a.getAttribute("href")}"${
+                a.classList.contains("active") ? ' class="active"' : ""
+              }>${a.textContent}</a>`
+          )
+          .join("");
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "nav-toggle";
+        toggle.setAttribute("aria-label", "Open menu");
+        toggle.setAttribute("aria-controls", "mobile-menu");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.innerHTML =
+          '<span class="nav-toggle-bars"><span></span><span></span><span></span></span>';
+        (headerCta || header.querySelector(".wrap")).appendChild(toggle);
+
+        const menu = document.createElement("div");
+        menu.className = "mobile-menu";
+        menu.id = "mobile-menu";
+        menu.hidden = true;
+        menu.innerHTML =
+          '<div class="mobile-menu-backdrop"></div>' +
+          '<div class="mobile-menu-panel" role="dialog" aria-modal="true" aria-label="Menu">' +
+          `<div class="mobile-menu-top">${logoHTML}` +
+          '<button type="button" class="mobile-menu-close" aria-label="Close menu">&times;</button></div>' +
+          `<nav class="mobile-nav">${linksHTML}</nav>` +
+          `<div class="mobile-menu-cta">${ctaHTML}</div>` +
+          "</div>";
+        document.body.appendChild(menu);
+
+        const firstLink = menu.querySelector(".mobile-nav a");
+        const isOpen = () => menu.classList.contains("open");
+        const openMenu = () => {
+          menu.hidden = false;
+          void menu.offsetWidth; // reflow so the open transition runs
+          menu.classList.add("open");
+          document.body.classList.add("menu-open");
+          toggle.setAttribute("aria-expanded", "true");
+          if (firstLink) firstLink.focus();
+        };
+        const closeMenu = ({ refocus = false } = {}) => {
+          menu.classList.remove("open");
+          document.body.classList.remove("menu-open");
+          toggle.setAttribute("aria-expanded", "false");
+          if (refocus) toggle.focus();
+          setTimeout(() => {
+            if (!isOpen()) menu.hidden = true;
+          }, 300);
+        };
+
+        toggle.addEventListener("click", () => (isOpen() ? closeMenu() : openMenu()));
+        menu
+          .querySelector(".mobile-menu-close")
+          .addEventListener("click", () => closeMenu({ refocus: true }));
+        menu
+          .querySelector(".mobile-menu-backdrop")
+          .addEventListener("click", () => closeMenu({ refocus: true }));
+        // A tapped link either navigates away or jumps to an in-page anchor;
+        // either way the sheet should close.
+        menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => closeMenu()));
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && isOpen()) closeMenu({ refocus: true });
+        });
+        window.addEventListener("resize", () => {
+          if (window.innerWidth > 1020 && isOpen()) closeMenu();
+        });
+      }
+    }
+
+    // ---------- hero slides ----------
+    const slides = [...document.querySelectorAll(".hero-slide")];
+    if (slides.length > 1) {
+      let i = 0;
+      slides[0].classList.add("active");
+      setInterval(() => {
+        if (html.getAttribute("data-heromotion") === "static") return;
+        slides[i].classList.remove("active");
+        i = (i + 1) % slides.length;
+        slides[i].classList.add("active");
+      }, 7000);
+    } else if (slides.length === 1) {
+      slides[0].classList.add("active");
+    }
+
+    // ---------- reveal on scroll ----------
+    const revealEls = [...document.querySelectorAll(".reveal")];
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => e.isIntersecting && e.target.classList.add("in"));
+      },
+      { threshold: 0.12 }
+    );
+    revealEls.forEach((el) => io.observe(el));
+    // Fallback: some embeds fire IntersectionObserver unreliably (or only once).
+    // Run a cheap rect-based check alongside it on every scroll/resize.
+    const revealByRect = () => {
+      revealEls.forEach((el) => {
+        if (el.classList.contains("in")) return;
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight * 0.96 && r.bottom > 0) el.classList.add("in");
+      });
+    };
+    window.addEventListener("scroll", revealByRect, { passive: true });
+    window.addEventListener("resize", revealByRect, { passive: true });
+    setTimeout(revealByRect, 600);
+    window.addEventListener("beforeprint", () => revealEls.forEach((el) => el.classList.add("in")));
+
+    // ---------- FAQ ----------
+    document.querySelectorAll(".faq-item").forEach((item) => {
+      const q = item.querySelector(".faq-q");
+      const a = item.querySelector(".faq-a");
+      q.addEventListener("click", () => {
+        const open = item.classList.toggle("open");
+        a.style.maxHeight = open ? a.scrollHeight + "px" : "0";
+      });
+    });
+
+    // ---------- lead form ----------
+    // Backend hookup: window.SWLeads = { submit(payload) { ... } }
+    const form = document.querySelector(".lead-form");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        // The form is novalidate (custom UX), so validate explicitly — don't show the
+        // success state (and lose the lead) when required fields / the email are invalid.
+        if (!form.reportValidity()) return;
+        const data = Object.fromEntries(new FormData(form).entries());
+        if (window.SWLeads && window.SWLeads.submit) window.SWLeads.submit(data);
+        form.classList.add("sent");
+      });
+    }
+
+    // ---------- claim checkout ----------
+    // Three mutually exclusive plan cards (radios). The selected card is highlighted and
+    // the total shows its price. During the America's 250th promo the totals area swaps
+    // between the promo panel (Talking Site selected — the only discounted plan) and the
+    // plain total (any other plan). The charged amount is recomputed server-side; this is
+    // display only.
+    const checkout = document.getElementById("co-form");
+    if (checkout) {
+      const picks = [...checkout.querySelectorAll("input.co-pick")];
+      const now = document.getElementById("co-now");
+      const promoBox = document.getElementById("co-total-promo");
+      const plainBox = document.getElementById("co-total-plain");
+
+      const dollars = (cents) => {
+        const n = Math.round(cents / 100);
+        return "$" + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      };
+
+      const recalcCheckout = () => {
+        const selected = picks.find((pick) => pick.checked) || picks[0];
+        if (!selected) return;
+
+        picks.forEach((pick) => {
+          const card = pick.closest(".co-plan");
+          if (card) card.classList.toggle("co-plan--selected", pick.checked);
+        });
+
+        const price = parseInt(selected.getAttribute("data-price"), 10) || 0;
+        const isPromoPlan = selected.value === "talking";
+
+        if (now) now.textContent = dollars(price);
+
+        if (promoBox) {
+          promoBox.hidden = !isPromoPlan;
+          if (plainBox) plainBox.hidden = isPromoPlan;
+        }
+      };
+
+      picks.forEach((pick) => pick.addEventListener("change", recalcCheckout));
+      recalcCheckout();
+
+      // One Stripe session per click — a double-tap on "Start My Plan" would open two
+      // live checkout sessions (create_session has no idempotency key).
+      checkout.addEventListener("submit", () => {
+        const submit = checkout.querySelector(".co-submit");
+        if (submit) submit.disabled = true;
+      });
+    }
+
+    // ---------- footer year ----------
+    document.querySelectorAll(".js-year").forEach((el) => (el.textContent = new Date().getFullYear()));
+  });
+})();

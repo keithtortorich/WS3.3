@@ -1,0 +1,26 @@
+{
+  "skill_name": "brand-governance-unifier",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "webstaffr-repo-docs-consolidation",
+      "prompt": "We have 5 scattered governance documents in our repo: (1) CLAUDE.md (operational control, process, token efficiency), (2) TASKS.md (live task status), (3) CODE_REVIEW.md (security and code findings), (4) STRATEGY.md (product/market strategy), (5) LEGACY_AUDIT.md (inherited decisions from old repo). These documents were written ad-hoc over time and now feel disjointed. Our philosophy is: 'We absorb complexity so customers experience clarity. Complexity belongs inside, clarity between us and the customer.' We use two communication styles: Executive (for internal, leadership, strategy) and Commercial (for customers, Grade 8 reading level). Consolidate these five documents into a unified governance system where every doc reinforces the others. The result should feel like it came from one elite consultancy, not a scattered collection of notes.",
+      "expected_output": "A consolidated governance system with clear role definitions for each document (e.g., CLAUDE.md for operational control, TASKS.md for live status/transparency, CODE_REVIEW.md integrated into architectural decisions, etc.). Each document should use consistent philosophy, eliminate contradictions, and reinforce the two-communication-style model. Reconciliation memo explaining which docs were consolidated, which kept separate, and why. The finished work should be the long-term governance manual for WebStaffr's operations.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "saas-voice-audit-and-fix",
+      "prompt": "Our SaaS company has four scattered governance docs: (1) the logo treatment (Garamond Bold Italic, #1f4d78), (2) a sales playbook with high-vocabulary language for enterprise, (3) a website copy style guide with super casual tone ('yo, here's your dashboard'), and (4) an investor pitch that uses em dashes everywhere. These are all over the place. Audit them for consistency issues and produce a consolidated set of governance standards that maintains two clear communication styles: Executive (for investors/leadership) and Commercial (for customers, Grade 8 reading level, no em dashes).",
+      "expected_output": "Consolidated governance with: (a) visual identity rules with the logo specifications clearly documented, (b) editorial standards separating Executive and Commercial voice with examples, (c) sales positioning doctrine, and (d) customer-facing brand standards. A reconciliation memo explaining which docs were consolidated and why.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "eval_name": "new-copy-against-existing-standards",
+      "prompt": "We have an existing governance manual (imagine it defines our brand as 'premium, outcome-focused, Grade 8 commercial voice, no em dashes'). A team member just wrote customer-facing marketing copy: 'Our revolutionary AI technology leverages cutting-edge machine learning paradigms. We're not just a software company—we're a transformation partner.' Audit this copy against our standards. What's off-brand? Rewrite it to match our governance.",
+      "expected_output": "An audit report identifying specific deviations (vocabulary too elevated, 'cutting-edge AI' contradicts 'outcome-focused,' em-dash rule violation, 'not just a software company' pattern). A rewritten version in Grade 8 voice, outcome-focused, using simple language, matching the brand identity.",
+      "files": []
+    }
+  ]
+}

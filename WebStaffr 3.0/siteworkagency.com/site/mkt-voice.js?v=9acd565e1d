@@ -1,0 +1,443 @@
+/* ============================================================
+   SiteWork — marketing voice widget (the "Premier" UI).
+
+   Ported from the Premier Garage Doors handoff (js/voice.js): the same
+   launcher → expanding call panel with an orb visualizer, a LIVE transcript,
+   quick actions, mute, and a Start call / End call button. The copy is
+   SiteWork's (Erika, "your new talking website"); the look + interaction are
+   Premier's.
+
+   This file owns the UI ONLY and exposes the SAME window.SWVoice contract the
+   old voice-widget.js did, so sw-backend.js (the real OpenAI-Realtime-over-
+   WebRTC transport) drives it unchanged:
+     window.SWVoice.connect({ onStart, onStop, onUserText, onMute })
+     window.SWVoice.setState('idle'|'thinking'|'listening'|'speaking')
+     window.SWVoice.addMessage('user'|'ai', text)   // renders a transcript bubble
+     window.SWVoice.configure({ status, hint, brand, maxCallMs, inactivityMs })
+     window.SWVoice.notify(big, sub)                // error/status override
+     window.SWVoice.open() / .close()
+
+   With no backend connected (voice off in dev/CI) the panel runs a short
+   scripted demo so the orb + transcript still come alive.
+   ============================================================ */
+(function () {
+  const ICON = {
+    phone:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.27a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92Z"/></svg>',
+    cal: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+    quote:
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>',
+    q: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>',
+    mic: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/></svg>',
+    end: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85a.999.999 0 0 1-1.39-.01L.29 13.08a.99.99 0 0 1 0-1.4C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.68c.39.37.39.99.01 1.4l-2.5 2.39c-.37.38-.99.38-1.39.01a11.5 11.5 0 0 0-2.66-1.85.998.998 0 0 1-.56-.9v-3.1A15.6 15.6 0 0 0 12 9Z"/></svg>',
+  };
+  const bars = (n) => Array.from({ length: n }, () => "<span></span>").join("");
+
+  // Idle copy (marketing). configure() overrides big/sub at runtime.
+  let idleStatus = "Online — ready to help"; // header status line
+  let idleBig = "Talk to Erika"; // visualizer prompt
+  let idleSub = "Tap Start call and tell her about your business.";
+  let brand = "Erika · SiteWork AI";
+
+  const html = `
+  <button class="vw-launch peek" aria-label="Talk to the SiteWork AI">
+    <span class="mini"><span class="ping"></span><span class="vw-eq">${bars(5)}</span></span>
+    <span class="txt"><span class="t">Talk to our AI</span><span class="s">Talking websites · Ask anything · 24/7</span></span>
+  </button>
+  <section class="vw-panel" role="dialog" aria-label="SiteWork voice assistant">
+    <header class="vw-head">
+      <span class="glow"></span>
+      <span class="vw-avatar"><span class="ring"></span><span class="vw-eq">${bars(4)}</span></span>
+      <div class="vw-htext">
+        <div class="nm" data-brand>Erika <span style="font-weight:400;font-size:12px;color:#A9A091">· SiteWork AI</span></div>
+        <div class="st"><span class="live-dot"></span><span data-status>Online — ready to help</span></div>
+      </div>
+      <button class="vw-x" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </header>
+    <div class="vw-viz">
+      <div class="vw-orb"><span class="r r1"></span><span class="r r2"></span><span class="pulse"></span><span class="vw-bars">${bars(7)}</span></div>
+      <div class="vw-prompt">
+        <div class="big" data-prompt>Talk to Erika</div>
+        <div class="sm" data-subprompt>Tap Start call and tell her about your business.</div>
+      </div>
+    </div>
+    <div class="vw-script"><div class="vw-script-inner" data-script></div></div>
+    <div class="vw-quick">
+      <button data-q="How much does it cost?">${ICON.quote} How much does it cost?</button>
+      <button data-q="How do leads reach my phone?">${ICON.phone} How do leads reach me?</button>
+      <button data-q="What happens when I miss a call?">${ICON.q} If I miss a call?</button>
+    </div>
+    <div class="vw-controls">
+      <button class="vw-mute" aria-label="Mute" data-mute>${ICON.mic}</button>
+      <button class="vw-call" data-call>${ICON.phone} <span data-call-label>Start call</span></button>
+    </div>
+    <div class="vw-foot">Powered by <b>SiteWork AI</b> · Calls may be recorded</div>
+  </section>`;
+
+  const root = document.createElement("div");
+  root.className = "vw";
+  root.innerHTML = html;
+  function mount() {
+    if (!root.isConnected) document.body.appendChild(root);
+  }
+  if (document.body) mount();
+  else document.addEventListener("DOMContentLoaded", mount);
+
+  const $ = (s) => root.querySelector(s);
+  const panel = $(".vw-panel"),
+    launch = $(".vw-launch");
+  const statusEl = $("[data-status]"),
+    promptEl = $("[data-prompt]"),
+    subEl = $("[data-subprompt]");
+  const brandEl = $("[data-brand]");
+  const scriptEl = $("[data-script]"),
+    callBtn = $("[data-call]"),
+    muteBtn = $("[data-mute]");
+
+  let adapter = null; // set by sw-backend.js via connect()
+  let inCall = false;
+  let muted = false;
+  let demoTimers = []; // scripted-demo timeouts (no-backend path)
+  let voiceReady = null; // null=unknown (config in flight), true=live voice, false=off->demo
+  let pendingStart = false; // a Start tap landed before voiceReady was known
+  let openStartTimer = null; // deferred start from a [data-voice-open] click
+
+  // ---- cost guardrails (a browser<->OpenAI call streams billed audio for as long
+  // as it stays open, and the server can't watch it). Two SILENT timers bound it:
+  // a hard call-length ceiling + an inactivity close. Tunable via configure().
+  let maxCallMs = 10 * 60 * 1000;
+  let inactivityMs = 8 * 60 * 1000;
+  let maxCallTimer = null,
+    inactivityTimer = null;
+  function clearGuards() {
+    if (maxCallTimer) clearTimeout(maxCallTimer);
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    maxCallTimer = inactivityTimer = null;
+  }
+  function bumpInactivity() {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(
+      () => endCall("Call ended after a quiet stretch — tap Start call to begin again."),
+      inactivityMs
+    );
+  }
+  function armGuards() {
+    clearGuards();
+    maxCallTimer = setTimeout(
+      () => endCall("We've reached the call limit — tap Start call to begin again."),
+      maxCallMs
+    );
+    bumpInactivity();
+  }
+
+  // ---- panel open/close ----
+  function open() {
+    panel.classList.add("open");
+    launch.style.opacity = "0";
+    launch.style.pointerEvents = "none";
+  }
+  function close() {
+    panel.classList.remove("open");
+    launch.style.opacity = "";
+    launch.style.pointerEvents = "";
+    if (openStartTimer) {
+      clearTimeout(openStartTimer); // cancel a pending data-voice-open start
+      openStartTimer = null;
+    }
+    if (inCall) endCall();
+  }
+
+  // ---- transcript + status ----
+  function setStatus(t) {
+    statusEl.textContent = t;
+  }
+  function setPrompt(big, sm) {
+    if (big != null) promptEl.textContent = big;
+    if (sm != null) subEl.textContent = sm;
+  }
+  function addMsg(who, text) {
+    if (!text) return;
+    const role = who === "user" ? "user" : "bot"; // map ai/assistant/bot -> bot
+    const m = document.createElement("div");
+    m.className = "vw-msg " + role;
+    const b = document.createElement("div");
+    b.className = "b";
+    b.textContent = text; // textContent — never inject transcript as HTML
+    m.appendChild(b);
+    scriptEl.appendChild(m);
+    const sc = scriptEl.parentElement;
+    sc.scrollTop = sc.scrollHeight;
+  }
+
+  // ---- visual state (idle / listening / thinking / speaking) ----
+  // Also mirrored onto any on-page .hero-orb cards + .hv-status line so they
+  // animate during a live call (the old marketing widget did this too).
+  function mirror(s) {
+    document.querySelectorAll(".hero-orb").forEach((o) => {
+      o.classList.remove("listening", "thinking", "speaking");
+      if (s && s !== "idle") o.classList.add(s);
+    });
+    const hs = document.querySelector(".hv-status");
+    if (hs) {
+      const lbl =
+        s === "speaking"
+          ? "Speaking…"
+          : s === "listening"
+            ? "Listening…"
+            : s === "thinking"
+              ? "One moment…"
+              : "";
+      hs.textContent = lbl ? lbl + " — tap to end" : "";
+    }
+  }
+
+  function resetIdle() {
+    inCall = false;
+    clearGuards();
+    root.classList.remove("in-call", "listening", "speaking");
+    callBtn.innerHTML = ICON.phone + ' <span data-call-label>Start call</span>';
+    setPrompt(idleBig, idleSub);
+    setStatus(idleStatus);
+    muted = false;
+    muteBtn.classList.remove("on");
+    muteBtn.setAttribute("aria-label", "Mute");
+    mirror("idle");
+  }
+
+  // Enter the in-call UI without (re)starting transport — used both by startCall()
+  // and lazily when the backend reports a live state.
+  function enterCallUI() {
+    inCall = true;
+    root.classList.add("in-call");
+    callBtn.innerHTML = ICON.end + ' <span data-call-label>End call</span>';
+    setPrompt("Connected", "Live with Erika · speak naturally");
+  }
+
+  function setState(s) {
+    if (s === "idle") {
+      resetIdle();
+      return;
+    }
+    if (!inCall) enterCallUI();
+    // Arm cost guards if a real call entered the live UI lazily (a backend-driven
+    // state without a prior startCall) — never leave a billed call un-bounded.
+    if (!maxCallTimer && adapter && adapter.onStart && voiceReady === true) armGuards();
+    if (s === "speaking") {
+      root.classList.add("speaking");
+      root.classList.remove("listening");
+      setStatus("Speaking…");
+    } else if (s === "thinking") {
+      root.classList.add("listening");
+      root.classList.remove("speaking");
+      setStatus("One moment…");
+    } else {
+      // listening (default live)
+      root.classList.add("listening");
+      root.classList.remove("speaking");
+      setStatus("Listening…");
+    }
+    if (maxCallTimer) bumpInactivity();
+    mirror(s);
+  }
+
+  // ---- call lifecycle ----
+  function startCall() {
+    if (inCall) return;
+    clearDemo();
+    enterCallUI();
+    root.classList.add("listening");
+    setStatus("Connecting…");
+    scriptEl.innerHTML = "";
+    mirror("listening");
+    if (adapter && adapter.onStart && voiceReady === true) {
+      pendingStart = false;
+      armGuards();
+      adapter.onStart();
+    } else if (voiceReady === false) {
+      pendingStart = false;
+      runDemo(); // backend reported voice off (dev/CI) — scripted preview
+    } else {
+      // voice status not known yet (config fetch in flight) — hold on "Connecting…"
+      // until setVoiceReady() decides real-vs-demo, so a quick tap never drops into
+      // the scripted demo while real voice is actually live.
+      pendingStart = true;
+    }
+  }
+  function endCall(msg) {
+    if (!inCall && !msg) return;
+    clearDemo();
+    const wasReal = !!(adapter && adapter.onStop);
+    resetIdle();
+    if (wasReal) adapter.onStop();
+    if (msg) setPrompt(idleBig, msg);
+  }
+
+  function setMuted(next) {
+    muted = next;
+    muteBtn.classList.toggle("on", muted);
+    muteBtn.setAttribute("aria-label", muted ? "Unmute" : "Mute");
+    if (adapter && adapter.onMute) adapter.onMute(muted);
+  }
+
+  // ---- scripted demo (only when no real backend is connected) ----
+  function clearDemo() {
+    demoTimers.forEach(clearTimeout);
+    demoTimers = [];
+  }
+  function runDemo() {
+    clearDemo();
+    const demo = [
+      { who: "bot", t: "Hi! I'm the AI that will live on your website. Tell me about your business — I'll build it.", at: 600, st: "Speaking…", s: "speaking" },
+      { who: "user", t: "I run a garage door repair company in Miami.", at: 3200, st: "Listening…", s: "listening" },
+      { who: "bot", t: "Perfect — I'll build you a site that answers customers and texts you every lead. What's the best number for your onboarding link?", at: 5600, st: "Speaking…", s: "speaking" },
+      { who: "user", t: "Sure, it's 305-555-0148.", at: 9000, st: "Listening…", s: "listening" },
+      { who: "bot", t: "Done — I've texted your link. Tap it and your new talking website is on the way. 👍", at: 11000, st: "Link sent", s: "speaking" },
+    ];
+    demo.forEach((step) => {
+      const t = setTimeout(() => {
+        addMsg(step.who, step.t);
+        setStatus(step.st);
+        root.classList.remove("listening", "speaking");
+        root.classList.add(step.s);
+        mirror(step.s);
+      }, step.at);
+      demoTimers.push(t);
+    });
+    const done = setTimeout(() => {
+      setStatus("Online — ready to help");
+      root.classList.remove("speaking");
+      root.classList.add("listening");
+      mirror("listening");
+    }, 14500);
+    demoTimers.push(done);
+  }
+
+  // ---- public API (the contract sw-backend.js drives) ----
+  function configure(opts) {
+    opts = opts || {};
+    if (opts.brand) {
+      brand = opts.brand;
+      if (brandEl) brandEl.textContent = brand;
+      launch.setAttribute("aria-label", "Talk to " + brand);
+    }
+    if (opts.status) idleBig = opts.status;
+    if (opts.hint) idleSub = opts.hint;
+    if (typeof opts.maxCallMs === "number" && opts.maxCallMs > 0) maxCallMs = opts.maxCallMs;
+    if (typeof opts.inactivityMs === "number" && opts.inactivityMs > 0)
+      inactivityMs = opts.inactivityMs;
+    if (!inCall) setPrompt(idleBig, idleSub);
+  }
+  function notify(big, sub) {
+    setPrompt(big, sub);
+  }
+  // sw-backend.js reports whether real voice is live once /api/voice/config resolves.
+  // A tap that arrived before we knew (pendingStart) is resolved here: real call if
+  // live, scripted demo if off.
+  function setVoiceReady(b) {
+    voiceReady = !!b;
+    if (pendingStart && inCall) {
+      pendingStart = false;
+      if (voiceReady && adapter && adapter.onStart) {
+        armGuards();
+        adapter.onStart();
+      } else {
+        runDemo();
+      }
+    }
+  }
+
+  window.SWVoice = {
+    connect(a) {
+      adapter = a;
+    },
+    configure,
+    setState,
+    addMessage: addMsg,
+    notify,
+    setVoiceReady,
+    open,
+    close,
+    startCall,
+  };
+
+  // ---- events ----
+  launch.addEventListener("click", open);
+  $(".vw-x").addEventListener("click", close);
+  callBtn.addEventListener("click", () => (inCall ? endCall() : startCall()));
+  muteBtn.addEventListener("click", () => setMuted(!muted));
+  root.querySelectorAll("[data-q]").forEach((b) => {
+    b.addEventListener("click", () => {
+      open();
+      const fresh = !inCall;
+      if (fresh) startCall();
+      const q = b.getAttribute("data-q");
+      if (adapter && adapter.onUserText) {
+        addMsg("user", q);
+        adapter.onUserText(q);
+      }
+    });
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && panel.classList.contains("open")) close();
+  });
+
+  // ---- on-page hooks (the big section button, the hero orbs, prompt chips) ----
+  const HERO_QUESTIONS = [
+    "How much does a talking website cost?",
+    "How does it text leads to my phone?",
+    "What happens when I miss a call?",
+  ];
+  function wireOnPage() {
+    document.querySelectorAll(".hero-orb").forEach((orb) => {
+      if (orb.dataset.vwWired) return;
+      orb.dataset.vwWired = "1";
+      orb.addEventListener("click", () => {
+        open();
+        if (!inCall) startCall();
+      });
+    });
+    document.querySelectorAll(".hv-chip[data-demo]").forEach((chip) => {
+      if (chip.dataset.vwWired) return;
+      chip.dataset.vwWired = "1";
+      chip.addEventListener("click", () => {
+        open();
+        const fresh = !inCall;
+        if (fresh) startCall();
+        const q = HERO_QUESTIONS[parseInt(chip.dataset.demo, 10) || 0];
+        if (adapter && adapter.onUserText) {
+          addMsg("user", q);
+          adapter.onUserText(q);
+        }
+      });
+    });
+  }
+  // Any element with [data-voice-open] (the big section's "Start a voice call"
+  // button, CTA buttons, the big stage orb) opens the widget and starts a call.
+  const voiceOpen = (e) => {
+    const trg = e.target.closest("[data-voice-open]");
+    if (!trg) return;
+    e.preventDefault();
+    open();
+    if (openStartTimer) clearTimeout(openStartTimer);
+    openStartTimer = setTimeout(() => {
+      openStartTimer = null;
+      // only start if the panel is still open — a fast close cancels the call so we
+      // never start a billed session behind a closed (invisible) panel.
+      if (!inCall && panel.classList.contains("open")) startCall();
+    }, 450);
+  };
+  document.addEventListener("click", voiceOpen);
+  // role="button" divs (the vf-stage orb) don't fire click on Enter/Space — mirror it.
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    if (!e.target.closest || !e.target.closest("[data-voice-open]")) return;
+    voiceOpen(e);
+  });
+  document.addEventListener("DOMContentLoaded", wireOnPage);
+  wireOnPage();
+
+  // drop the peek label after a moment (premier behavior)
+  setTimeout(() => launch.classList.remove("peek"), 4200);
+})();

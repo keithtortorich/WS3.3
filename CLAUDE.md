@@ -96,3 +96,65 @@ Covers TASKS.md #35-#62, none of which were previously reflected here. Founder f
 **Verified as of the last commit in this range (`904550a`, 2026-07-25):** **191/191 passing**, `scripts/health_check.py` **HEALTHY**. Pushed to `origin/main` with founder approval. (Test count differs from the 2026-07-22 addendum's 169 and TASKS.md #54's 213 because those reflect different working copies at different points, not a regression : #57 confirms 191 is the correct current count for this local `.venv`.)
 
 **Process note for next session:** update this addendum at natural checkpoints going forward (a `merge:` commit landing, or a batch of TASKS.md entries closing out a phase) rather than only at the start of a new repo, so this file doesn't go stale again.
+
+---
+
+## Session Addendum (2026-07-25) : WS3.3 deployed to Vercel; dependency-install issue resolved
+
+This addendum and the two that follow came from a parallel session working directly against `origin/main`, discovered via a rejected `git push` on 2026-07-26 and merged in (commit history preserved, no work discarded). One real conflict surfaced and was resolved: this session's `313fe94` raised `requires-python` to `>=3.13`; the local session above (#58) had independently lowered it to `>=3.10` after verifying the suite runs clean there. Kept at **`>=3.10`** post-merge — no `vercel.json` or platform config pins a runtime version, `313fe94`'s commit only changed that one line with no stated reason tied to the deploy fix, and `>=3.10` was the version actually verified against the passing suite. Flagging this explicitly in case there was deploy-environment context behind `>=3.13` that isn't visible from the commit alone.
+
+WS3.3 is now deployed and live at `https://web-staffr3-3.vercel.app`.
+
+WS3.3 is now deployed and live at `https://web-staffr3-3.vercel.app`.
+
+**Verified:**
+- `/health` returns `200 {"status":"ok"}` — the app boots, imports load, and routing is functional.
+- Vercel project `web-staffr3-3` exists under the `web-staffr` team and is linked to this repo.
+- `DATABASE_URL` is set on the Vercel project, scoped to Preview + Production.
+- The original `500 FUNCTION_INVOCATION_FAILED`/`ModuleNotFoundError: No module named 'fastapi'` is resolved by adding `[project].dependencies` to `pyproject.toml`, sourced from existing `requirements.txt` pins, then pushing commit `313fe94` to `main`.
+
+**Current observed behavior:**
+- `/sites/desert_pro_plumbing_f22725f8` returns `503` with body `{"detail":"Site data temporarily unavailable"}`.
+- In `site_router.py`, `get_site_data()` raises `HTTPException(503)` only when `get_connection()` fails at the DB layer (`DB_ERRORS`); a missing intake row would return `404`, not `503`.
+- This means the app reaches the database layer and fails there; it is not an app-code regression introduced by the deploy fix.
+
+**Not yet confirmed:** root cause of the 503. Working hypotheses, in order of precedence from prior incident shape:
+1. Transient Supabase `ap-south-1` routing/pool behavior matching WS3.0's prior signature.
+2. Stale or misconfigured credential, even though `DATABASE_URL` exists in Vercel.
+3. Tenant `desert_pro_plumbing_f22725f8` not yet provisioned in Supabase for this project; expected to return `404`, not `503`, if that were the only issue.
+
+**Next step:** run a direct DB diagnostic from the repo (`scripts/test_db_connection.py` or equivalent) to confirm whether the failure is connection-level or query-level, rather than changing anything until that result is in hand.
+
+---
+
+## Session Addendum (2026-07-26) : 503 root cause still unconfirmed; logging gap found and fixed
+
+Root cause of the `/sites/{tenant_id}` 503 from the addendum above is **still not confirmed** as of this addendum -- the founder could not retrieve the live `DATABASE_URL` value from Vercel's dashboard to run `scripts/test_db_connection.py` (Vercel marks it Sensitive, which is write-only in the UI once set -- there is no "reveal" option, only overwrite). That diagnostic remains the concrete next step; it needs the value pulled from Supabase's own dashboard (Project Settings -> Database -> Connection string) instead of Vercel's.
+
+**Real, separate bug found and fixed this session:** checked Vercel's live Logs view (`vercel.com/web-staffr/web-staffr3-3/logs`) for the specific request that produced the 503 (`fmbx8-1785067039061-6e9b519ec0e2`) and found nothing -- not a search/filter miss, confirmed by also checking the fully unfiltered log view for the same time window, which showed zero Warning/Error/Fatal entries at all. Root cause: `site_router.py`'s `_get_connection()` (and the identical pattern in `intake_router.py`, `attribution_router.py`, and `workers/angel/router.py`'s shared closure) caught `DB_ERRORS` and raised `HTTPException(503)` without ever calling `logger.error(...)` first -- so a DB-layer failure was, and always had been, completely silent in production logs. This wasn't specific to today's incident; every 503 from any of these four call sites since they were written would have been unobservable this same way.
+
+**Fix:** added one `logger.error("<site>_db_connection_failed error_type=%s", type(exc).__name__)` call to each of the four connection-boundary functions, immediately before the existing `raise HTTPException(503, ...)`. Deliberately logs only `type(exc).__name__` (e.g. `OperationalError`), never `str(exc)` -- a psycopg2 error message can include the connection string (host, user), and this repo's Security Baseline prohibits that regardless of whether it's console output or committed text. Scoped to exactly the four router-level connection-opening call sites, not the ~30 other `except DB_ERRORS` sites across `repository.py`, `intake.py`, `attribution.py`, `booking.py`, etc. -- those catch at a different layer (raising `StorageError` back to an internal caller that already has its own context), and widening this fix to all of them would have been a larger, out-of-scope change for what this investigation needed.
+
+**Verified this session:** full suite run from a copy outside the mount (same documented sandbox workaround as the 2026-07-22 addendum) -- **191/191 passing**. `scripts/health_check.py` : **HEALTHY** (all 8 checks). No behavior change to any response the client sees; this is additive logging only, same 503 status/body as before.
+
+**Also added, not yet run:** `scripts/test_db_connection.py`, a throwaway diagnostic matching WS3.0's proven pattern (`getpass`-hidden input, `SUCCESS`/`SUCCESS_NO_DATA`/`FAILED: <reason>` output, never prints the URL or a raw exception message). Founder attempted to run it but could not retrieve the credential from Vercel to paste in (see above) -- not yet executed against the real value as of this addendum.
+
+**Not yet done:** the actual root-cause determination this whole investigation was chasing. Once `DATABASE_URL` is retrieved from Supabase directly and `scripts/test_db_connection.py` is run, the next 503 (if any) will at least be visible in Vercel's logs with an exception type, which the ones investigated this session were not.
+
+---
+
+## Session Addendum (2026-07-26) : sessions reconciled, merge conflict resolved
+
+The two addenda immediately above (this Vercel-deploy session) and the "bridges, security fix, repo merges" addendum before them were written in parallel, in separate sessions, against the same repo — one working locally, one pushed live to `origin/main`. Neither knew about the other until a routine `git push` was rejected. Merged via standard `git merge origin/main`; the only real conflict was the CLAUDE.md addendum text itself (both sessions appended here) plus the `requires-python` disagreement noted two addenda up, both resolved above. No commits were discarded on either side.
+
+**Combined state after merge:** local integration-bridge work (#35-#62: social media + workflow graph bridges, auth header fix, dead code removal, repo merges) and the Vercel-deploy work (live deploy, DB-connection silent-failure logging fix, `scripts/test_db_connection.py`) are both now in one linear history on `main`.
+
+**Still genuinely open, carried forward from both sides:**
+- The `/sites/{tenant_id}` 503 root cause is **still unconfirmed**. Next concrete step, per the addendum above, is pulling `DATABASE_URL` from Supabase's dashboard directly (not Vercel's, which is write-only once set) and running `scripts/test_db_connection.py`.
+- Disposition of `WebStaffr 3.0/` and `social-media-marketing-machine/` subfolders (unrelated to the Vercel session, still open).
+- D4 : SMS/email vendor for the two-way client comms channel (post-MVP).
+- #45 : ServiceTitan socket workflow format.
+
+**Not yet verified:** the full suite has not been re-run against the merged tree as of this addendum. Do that before the next push, given both sides touched `pyproject.toml`, several router files, and `webstaffr/workers/angel/router.py`.
+
+**Process note, reinforcing the one above:** this is the second time in two days this addendum has gone stale relative to actual repo state — this time because two sessions ran in parallel without either being aware of the other's remote pushes. Running `git fetch` at the start of a session (not just before a push) would have surfaced this sooner.

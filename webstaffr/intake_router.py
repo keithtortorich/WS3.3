@@ -8,6 +8,7 @@ Angel-specific per its existing docstring.
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
@@ -23,6 +24,8 @@ from .intake import (
     validate_intake_payload,
 )
 from .trade_presets import SUPPORTED_INDUSTRIES, get_preset
+
+logger = logging.getLogger("webstaffr.intake_router")
 
 intake_router = APIRouter()
 
@@ -109,6 +112,9 @@ def _get_connection(request: Request):
     try:
         return get_connection(request.app.state.db_path)
     except DB_ERRORS as exc:
+        # See site_router.py's identical comment: log the exception type
+        # only, never str(exc) (may contain the connection string).
+        logger.error("intake_db_connection_failed error_type=%s", type(exc).__name__)
         raise HTTPException(status_code=503, detail="Intake temporarily unavailable -- please try again shortly") from exc
 
 

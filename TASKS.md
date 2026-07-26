@@ -34,9 +34,12 @@
 
 (none)
 
+- #64 : Reviewed and merged 4 of 5 open Dependabot pip PRs after individually testing each bump (isolated scratch venv, repeated runs to rule out flakiness): `certifi` 2026.6.17→2026.7.22, `click` 8.1.8→8.4.2, `fastapi` 0.128.8→0.139.2, `starlette` 0.49.3→1.3.1 (major version — merged together with the `fastapi` bump specifically because `fastapi==0.128.8` declares `starlette<1.0.0`; the two are not independently safe). Found and left open: `pydantic-core` 2.46.4→2.47.0 is genuinely broken alone — `pydantic==2.13.4` pins exactly `pydantic-core==2.46.4`, so this bump on its own throws `SystemError` on import and fails test collection; that Dependabot PR was not merged and needs to be closed manually (no `gh` auth available in this session) or paired with an untested `pydantic` bump. Also surfaced, unrelated to any of these bumps: `test_chat_is_rate_limited_per_tenant`/`test_webhook_is_rate_limited_per_tenant` is a pre-existing flaky test (~1-in-7 runs, reproduced on baseline too) — looks like shared/order-dependent rate-limiter state, not a real regression; worth its own follow-up. Verified post-merge in a fresh isolated venv, 3 repeat runs: **191/191 passing** each time (one new harmless `StarletteDeprecationWarning` re: `httpx`→`httpx2` for `TestClient`, not breaking). Local dev `.venv` synced to match. Pushed to `origin/main` (`b5a0655`) with founder approval.
+
 ## Pending
 
 - #45 : Decide ServiceTitan socket workflow format before next integration pass.
+- Close the `dependabot/pip/pydantic-core-2.47.0` PR on GitHub manually (this session has no `gh` auth) — confirmed unsafe to merge alone, see #64.
 
 ## Blocked
 

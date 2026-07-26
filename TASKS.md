@@ -36,6 +36,7 @@
 ## Blocked
 
 - No canonical `pytest` config/test suite historically present in WS3.3; the new `pyproject.toml` + `tests/` folder is a minimal addition and may need review before treating it as canonical project-wide test infrastructure.
+- 2026-07-26 : The live site's business-data lookup (`/sites/{tenant_id}`) is intermittently unavailable — it's the page that's supposed to show a contractor's info to their customers. The app itself is healthy and running; this is specifically about the database connection to that one feature. Cause not yet confirmed. Diagnosing it further requires resetting the database password (the current one can't be viewed, only replaced), which would also require immediately updating the matching password in Vercel afterward — a real credential change, not a read-only check, so it's paused pending founder availability to do that step rather than pushed through solo. Logging improvements were shipped this session (commit `6093f33`) so the *next* time this happens, Vercel's logs will actually show what went wrong instead of nothing, which should make the eventual fix much faster whenever this is picked back up. Not blocking MVP: this endpoint isn't wired into the customer-facing flow yet per current MVP scope.
 
 ## Decisions Log
 

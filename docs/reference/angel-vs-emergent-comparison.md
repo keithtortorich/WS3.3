@@ -1,0 +1,33 @@
+# Angel's current prompt/design vs. the Emergent project's approach
+
+Comparison written 2026-07-26 after reviewing a separate designer's parallel prototype of the same product concept (per-trade generated sites + AI voice receptionist), found at a password-protected Emergent code-server instance. Source prompts and design spec are in `docs/reference/emergent-voice-and-brand-prompts.md` and `docs/reference/emergent-design-guidelines.json`. This note is analysis only -- nothing here has been wired into Angel or the site generator; any adoption is a founder call per CLAUDE.md.
+
+## Voice prompt: Angel vs. the Emergent per-tenant prompt
+
+Angel's prompt (`webstaffr/workers/angel/angel_prompt.md`) is short, capability-oriented, and multi-vertical (plumbing, HVAC, electrical, roofing, contractors, salons, dentists) with an explicit tone-adaptation rule per vertical. The Emergent prompt is narrower (roofing/plumbing/electrical/HVAC only) and reads like it went through more rounds of trial-and-error against actual TTS output, because it specifies things Angel's prompt doesn't:
+
+- **No em dashes, ever.** Angel's prompt has no equivalent rule. This is worth adopting regardless of stack -- em dashes read as unnatural pauses or get mispronounced by most TTS engines, and it's a one-line, zero-risk addition to `angel_prompt.md`.
+- **No exclamation marks, no hype language.** Angel's prompt says "warm, professional" but doesn't forbid anything specific. Explicit forbidden-word/punctuation lists are more reliable than positive-only tone descriptions for keeping an LLM from drifting over a long session.
+- **Explicit self-disclosure ban**: "never say you are a bot, an assistant, or a software." Angel's prompt doesn't address this at all -- it's plausible Angel already avoids this via its persona framing ("You are Angel, a ... AI receptionist"), but the Emergent prompt makes the constraint explicit rather than implicit, which is safer against edge-case caller questions like "am I talking to a robot?"
+- **Fixed reply length ("two to three sentences maximum").** Angel's prompt says "concise and action-oriented" but gives no hard bound. A hard sentence cap is a stronger, more testable constraint for voice.
+- **A specific pricing-deflection script**: route to "a partner will provide an itemized recovery estimate after a brief operational review." Angel's prompt has the equivalent rule ("never guess technical details or make guarantees") but no scripted fallback line -- leaving the LLM to improvise the deflection each time, which is less consistent.
+- **"Never suggest the contractor will need to manage, log into, or configure anything."** This isn't really a voice-tone rule, it's product positioning bleeding into the prompt (see brand section below) -- not directly relevant to Angel's caller-facing role, but relevant to the site/dashboard copy.
+
+What Angel's prompt has that the Emergent one doesn't: broader vertical coverage, explicit escalation-to-human handling, feedback/testimonial capture, and interaction logging. The Emergent prompt is narrower in scope (it's purely a phone-answering script) whereas Angel's is closer to a full operating spec for the AI receptionist role. Angel's prompt is more complete; the Emergent prompt is more battle-tested on the narrow thing it does.
+
+**Recommendation:** the four voice-craft rules (no em dashes, no exclamation marks/hype, explicit self-disclosure ban, hard sentence cap) are low-risk, stack-agnostic additions worth folding into `angel_prompt.md` directly. The pricing-deflection script is worth adapting to WebStaffr's actual pricing/estimate flow rather than copying verbatim. This is a content edit to a founder-supplied doc (per the file's own header, sourced from a Google Drive doc) -- self-approvable as a doc/prompt refinement, but flagging since it's founder-authored content, not just code.
+
+## Brand voice: no WS3.3 equivalent exists
+
+The Emergent project has a second prompt for its own agency-facing chatbot ("WebStaffr Concierge") that doesn't correspond to anything in WS3.3 today -- there's no chat/concierge bot on WebStaffr's own marketing site in this repo, and this prompt is really a positioning document more than a technical spec. It's worth reading regardless of whether a concierge bot ever gets built, because it's a tight, opinionated statement of what WebStaffr *is* ("fully managed revenue recovery platform, not a chatbot, not a software tool, not a DIY website builder") and *isn't* ("contractors are not asked to configure, monitor, or maintain anything"). That positioning line -- "you don't manage the system, the system manages your needs" -- is a sharper version of something Angel's own prompt only gestures at. Whether this belongs anywhere in WS3.3 (site copy, sales materials, a future concierge bot) is a founder call, not something to act on unprompted.
+
+## Design system: nothing exists in WS3.3 to compare against
+
+WS3.3's scope explicitly delegates frontend/site generation to Lovable (per CLAUDE.md's MVP Scope) -- there's no design system doc in this repo today, so there's nothing to compare the Emergent `design_guidelines.json` against directly. What it offers that's likely useful regardless of who builds the frontend:
+
+- A specific, named color system (Stark White / Deep Obsidian / Electric Blaze accent, 95%-monochrome rule) rather than "make it look professional."
+- Pre-vetted, per-trade stock photo URLs (roofing/electrical/HVAC), which removes a fabrication risk -- CLAUDE.md's no-fabrication rule already prohibits inventing testimonials/ratings, and generic placeholder imagery is a related failure mode this guideline explicitly forbids ("Missing image categories MUST NOT default to placeholder text").
+- A concrete visual pattern for the voice widget specifically -- "Tracing Beam" treatment to signal "Active/Alive" -- which is a real answer to a real problem (how does a caller/visitor know Angel's widget is live, not decorative).
+- The same 9-section site-build checklist WebStaffr already uses internally (Hero, Trust Bar, Services, Why Us, Proof, Story, Local Presence, Lead Capture, Footer), which is a good sign of alignment rather than new information.
+
+**Recommendation:** if/when this repo (or Lovable) needs a written design brief instead of ad hoc styling, `docs/reference/emergent-design-guidelines.json` is a strong starting point already scoped to "WebStaffr and its tradesmen audience" per its own description field. Not adopting anything automatically -- this is reference material for whoever next works the frontend, most likely handed to Lovable rather than implemented in this repo.

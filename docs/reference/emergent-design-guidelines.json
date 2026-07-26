@@ -1,0 +1,114 @@
+{
+  "_provenance": "Copied from a separate designer's project at an Emergent code-server instance (password-protected VS Code web instance, /app/design_guidelines.json), reviewed and pulled in 2026-07-26. That project is a parallel prototype of the same product concept (per-trade generated sites + AI voice receptionist), explicitly targeted at WebStaffr per this file's own description field below. Reference material only -- not wired into any live code path. See docs/reference/README.md for what was and wasn't merged.",
+  "archetype": "Archetype 4: Swiss & High-Contrast (Authority, Clarity, Truth)",
+  "description": "A grounded, high-contrast, no-nonsense aesthetic tailored for WebStaffr and its tradesmen audience. Prioritizes authority, immediacy, and trust.",
+  "mode": "Light",
+  "color_palette": {
+    "base": "Stark White (#FFFFFF) and Tinted Grey/Blue (#F8FAFC, #0F172A)",
+    "primary": "Deep Obsidian (#0A0A0A) / Slate",
+    "accent": "Electric Blaze (#FF3B30) or Signal Orange (#EA580C) for action-oriented elements (Call Now, Book Appointment)",
+    "rules": "Color is function only. 95% of UI should be monochrome. Accent color exists solely to guide user action and highlight the Voice Chatbot."
+  },
+  "typography": {
+    "heading": {
+      "font_family": "Cabinet Grotesk",
+      "weights": ["800 (Black)", "300 (Light)"],
+      "classes": "font-sans tracking-tighter"
+    },
+    "body": {
+      "font_family": "IBM Plex Sans",
+      "weights": ["400", "500"],
+      "classes": "font-sans leading-relaxed tracking-normal"
+    },
+    "rules": [
+      "NO INTER or generic sans for headings.",
+      "Headings > 32px MUST use tracking-tight or tracking-tighter.",
+      "Overlines MUST be uppercase, tiny, wide spacing (tracking-[0.2em]).",
+      "Max hero text size is text-6xl. Use fluid scaling."
+    ]
+  },
+  "layouts": {
+    "hero": "The 'Tetris' Grid (Asymmetry, Visual Tension). grid-cols-1 md:grid-cols-12 gap-8. Heavy emphasis on real photography without generic overlays.",
+    "trust_bar": "Dense, compact grid. grid-cols-2 md:grid-cols-4 gap-4 with subtle 1px border-separators.",
+    "services": "Bento grid approach. col-span-4 for standard cards, col-span-8 for primary service.",
+    "dashboard": "High Density Grid. grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4. Every pixel utilized, h-full on children.",
+    "spacing": "Generous. Use p-8, p-12 for containers. Containers with borders MUST have p-6 or p-8."
+  },
+  "surfaces_and_visuals": {
+    "header": "Solid Background with hard bottom border (border-border/40). NO transparent headers over content.",
+    "cards": "Flat background, 1px subtle border, sharp or max 8px border-radius (rounded-md). Hover: -translate-y-1 shadow-lg.",
+    "voice_bot": "Use 'The Tracing Beam' surface strategy for the voice bot trigger/container to signal 'Active/Alive' technology.",
+    "shadows": "Minimalist. Use crisp edges, semi-transparent borders + subtle layered shadows on interaction."
+  },
+  "components": {
+    "navigation": "Visible brand name + 3-5 links + primary CTA. Visible on desktop, NO hamburger menu on desktop. Fixed/Sticky requires z-50 and backdrop-blur-xl with bg-white/80.",
+    "forms": "Shadcn components heavily customized to match the Swiss Brutalist look (thick 2px borders on focus, square or slightly rounded edges).",
+    "ctas": "Sharp or slightly rounded buttons (rounded-md). High contrast (Accent color bg, white text). Include micro-animations on hover.",
+    "voice_chat": "A sticky, high-contrast floating action component, or embedded in hero. Must have animated pulse or tracing beam border."
+  },
+  "motion": {
+    "rules": [
+      "Hover states on all interactive elements (must be a lighter hue of active state).",
+      "Focus states MUST have higher contrast.",
+      "Staggered entrance animations for service cards and testimonials.",
+      "NO universal transition (transition: all). Use specific properties (transition: transform 0.2s ease, opacity 0.2s ease)."
+    ]
+  },
+  "images": {
+    "strategy": "Real tradesmen photos, before/after shots. Overlay max bg-black/30 or gradient to transparent.",
+    "urls": [
+      {
+        "category": "hero_roofing",
+        "url": "https://images.pexels.com/photos/37623614/pexels-photo-37623614.jpeg",
+        "description": "Roofers working - for roofing template hero"
+      },
+      {
+        "category": "hero_electrician",
+        "url": "https://images.pexels.com/photos/35290684/pexels-photo-35290684.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Electrician detail work - for electrical template hero"
+      },
+      {
+        "category": "hero_hvac",
+        "url": "https://images.pexels.com/photos/6471913/pexels-photo-6471913.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "HVAC technician outdoors - for HVAC template hero"
+      },
+      {
+        "category": "team_about",
+        "url": "https://images.pexels.com/photos/6196685/pexels-photo-6196685.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Team arriving at house - for 'Why Us' / Team section"
+      },
+      {
+        "category": "team_portrait",
+        "url": "https://images.unsplash.com/photo-1597476817120-9b82cef5ce82?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MjMjA2MjA5MHwxfHxjb2xsZWN0aW9ufGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=85",
+        "description": "Worker in helmet - for Owner/Story section"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Do NOT use HTML-based components for advanced user interactions. Use Shadcn.",
+    "Prioritize optical alignment over geometrical alignment.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "DO NOT apply universal transition (transition: all).",
+    "Never center align the app container. No .App { text-align: center; }.",
+    "Never use placeholder URLs for images. Use the provided URLs.",
+    "Create a solid, trustworthy, 'Swiss Brutalist' layout. Ensure the Voice Receptionist is a prominent, high-contrast feature.",
+    "Ensure 'THE PERFECT SITE BUILD CHECKLIST' is implemented in the templates (Hero, Trust Bar, Services, Why Us, Proof, Story, Local Presence, Lead Capture, Footer).",
+    "Ensure the voice bot is present on both the agency site and the generated tradesmen sites.",
+    "For .js files, stick to standard JS functionality, but follow UI/UX strictly."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid generic 'on distribution' outputs. Make creative, distinctive frontends.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "MUST NOT apply universal transition (transition: all).",
+    "MUST NOT center align the app container (.App { text-align: center; }).",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER use AI assistant Emoji characters (e.g., robot, brain).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Missing image categories MUST NOT default to placeholder text. Use relevant assets.",
+    "Prioritize using pre-existing components from src/components/ui.",
+    "Use 'sonner' for toasts in /app/src/components/ui/sonner.tsx."
+  ]
+}

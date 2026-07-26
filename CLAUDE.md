@@ -64,3 +64,35 @@ Founder-directed reset, per the WS3.3 migration/kickoff prompt. Scope gate appli
 **Verified this session:** full suite run against the migrated WS3.3 code (not the source repo) : **169/169 passing**. `scripts/health_check.py` : **HEALTHY** (all 8 checks: imports, smoke workflow, tenant isolation, graceful degradation, SQLite round-trip, Angel imports, Angel booking round-trip, Angel router smoke). Test run and health check were executed from a copy outside the mounted folder due to a sandbox permission quirk with `tempfile` cleanup on the mount (unrelated to the code itself, confirmed by the same tests passing cleanly once run outside the mount).
 
 **Not yet done:** creating the actual GitHub repo for WS3.3 and connecting/pushing to it (founder-only step, this session only had local folder access). Committing this initial migration locally (self-approvable once a git repo is initialized here; not yet done this session : no `.git` exists in this folder yet). `PROJECT.md` : WS3.0's product-vision content is worth carrying forward, not yet copied into this repo as of this addendum.
+
+---
+
+## Session Addendum (2026-07-25 through 2026-07-26) : bridges, security fix, repo merges, planning doc
+
+Covers TASKS.md #35-#62, none of which were previously reflected here. Founder flagged the repo as feeling "all fucked up" on 2026-07-26 after this stretch of work; audited via ADR-001 (in session outputs, not committed to repo). Conclusion: no rewind warranted : every checkpoint including the latest verifies clean, and the two real defects found below were caught and fixed, not left in. The actual problem was this addendum going stale while TASKS.md kept moving, so a cold read of CLAUDE.md alone no longer matched reality. This entry is the fix for that.
+
+**Two new integration bridges added, each with its own migration/package/router/tests:**
+- Social media mounts/intents (#37-#41): `migrations/0007_social_media_mounts.sql`, `integrations/social_media/`, `workers/angel/social_media_router.py`, wired into `create_app()`.
+- Execution-trace graph (#46-#50): `migrations/0008_execution_nodes.sql`, `integrations/workflow_graph/`, `workers/angel/workflow_graph_router.py` with 4 endpoints, server-to-server only (no CORS, same pattern as `/book`/`/webhooks/ghl`).
+
+**Real defects found and fixed, not self-reported without verification:**
+- #44 : `X-API-Key` header wasn't binding via plain FastAPI param typing (`x_api_key: Optional[str] = None`) : silently received `None` on every request, so auth checks could never actually reject. Affected both new routers. Fixed with `Header(default=None, alias="X-API-Key")`; confirmed via `TestClient` (401 before, 200 after).
+- #52 : Full-suite (not module-scoped) testing caught a constant (`SUPPORTED_EVENT_TYPES`) accidentally deleted during an unrelated edit, which had broken `/webhooks/ghl`. Restored.
+- #53 : Two competing implementations of a workflow-graph data model collided (`webstaffr/graph.py` vs. `integrations/workflow_graph/`). Founder chose `integrations/workflow_graph/` as canonical; the other, plus its migration, was deleted.
+- #51, #58 : Hardcoded local Mac paths in test files were fixed, then found to be incompletely fixed, then fixed again across three files. Now use `Path(__file__).resolve().parents[1]` per the portable convention already used elsewhere in `tests/`.
+- #58 : `pyproject.toml`'s `requires-python` floor reflected the founder's local Python version, not an actual code requirement; relaxed from `>=3.13` to `>=3.10`, verified clean.
+- #57 : Dead code removed (`SocialMediaMountRequest`/`SocialMediaIntentRequest` in `router.py` : defined, never referenced).
+
+**Two other repos merged into this one by git history** (2026-07-25 `merge:` commits): `WebStaffr 3.0/` (full prior repo, kept for reference) and `social-media-marketing-machine/` (separate marketing-automation project, unrelated to WS3.3's MVP scope). Both now sit as subfolders inside this repo. Disposition (keep as-is / relocate out) is an open founder decision, not yet made.
+
+**Founder decision (2026-07-25):** `social-media-marketing-machine` combined with the `marketing-director-gtm` skill becomes the future "Marketing Coordinator" AI-employee role : the upgrade path to the Business Manager Tier. Explicitly post-MVP per this file's MVP Scope section (other AI-employee roles and billing/tier logic stay out of scope until MVP ships). No implementation done against this decision; planning only, captured in `MARKETING_COORDINATOR_PLAN.md` (three revision rounds, #59-#62) and TASKS.md's Decisions Log. That plan file is currently untracked in git; committing it or marking it explicitly disposable is an open founder decision.
+
+**Open founder decisions carried forward, not yet resolved:**
+- Disposition of `WebStaffr 3.0/` and `social-media-marketing-machine/` subfolders.
+- Whether to commit `MARKETING_COORDINATOR_PLAN.md`.
+- D4 from TASKS.md's Decisions Log : SMS/email vendor for the planned two-way client comms channel (post-MVP, not blocking).
+- #45 (Pending in TASKS.md): ServiceTitan socket workflow format, needed before the next ServiceTitan integration pass.
+
+**Verified as of the last commit in this range (`904550a`, 2026-07-25):** **191/191 passing**, `scripts/health_check.py` **HEALTHY**. Pushed to `origin/main` with founder approval. (Test count differs from the 2026-07-22 addendum's 169 and TASKS.md #54's 213 because those reflect different working copies at different points, not a regression : #57 confirms 191 is the correct current count for this local `.venv`.)
+
+**Process note for next session:** update this addendum at natural checkpoints going forward (a `merge:` commit landing, or a batch of TASKS.md entries closing out a phase) rather than only at the start of a new repo, so this file doesn't go stale again.

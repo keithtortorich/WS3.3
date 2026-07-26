@@ -252,6 +252,10 @@ def create_app(
         try:
             return _db_get_connection(db_path)
         except DB_ERRORS as exc:
+            # See site_router.py's identical comment: log the exception
+            # type only, never str(exc) (may contain the connection
+            # string). Shared by /chat, /book, /webhooks/ghl.
+            logger.error("angel_db_connection_failed error_type=%s", type(exc).__name__)
             raise HTTPException(status_code=503, detail="Service temporarily unavailable") from exc
 
     @app.get("/health")

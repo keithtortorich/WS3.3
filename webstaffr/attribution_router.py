@@ -15,11 +15,15 @@ design instead of patching after the fact).
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, HTTPException, Request
 
 from .attribution import CallEventRepository, TrackingNumberRepository
 from .db import DB_ERRORS, get_connection
 from .tenant import InvalidTenantError, Tenant
+
+logger = logging.getLogger("webstaffr.attribution_router")
 
 attribution_router = APIRouter()
 
@@ -28,6 +32,9 @@ def _get_connection(request: Request):
     try:
         return get_connection(request.app.state.db_path)
     except DB_ERRORS as exc:
+        # See site_router.py's identical comment: log the exception type
+        # only, never str(exc) (may contain the connection string).
+        logger.error("attribution_db_connection_failed error_type=%s", type(exc).__name__)
         raise HTTPException(status_code=503, detail="Attribution data temporarily unavailable") from exc
 
 

@@ -2,7 +2,7 @@
 name = "webstaffr"
 version = "3.3.0"
 description = "WebStaffr local service business platform"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 dependencies = [
     "anyio==4.12.1",
     "certifi==2026.6.17",

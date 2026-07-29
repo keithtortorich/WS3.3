@@ -1,6 +1,6 @@
 anyio==4.12.1
 certifi==2026.6.17
-click==8.1.8
+click==8.4.2
 fastapi==0.128.8
 h11==0.16.0
 httpx==0.28.1
